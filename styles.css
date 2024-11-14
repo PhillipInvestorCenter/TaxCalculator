@@ -374,6 +374,25 @@ input[type="checkbox"] {
     margin-top: 8px;
 }
 
+.feedback-button {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #17a2b8;
+    color: #ffffff;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
+    font-family: 'Kanit', sans-serif;
+    width: 100%;
+}
+
+.feedback-button:hover {
+    background-color: #138496;
+    transform: scale(1.05);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
