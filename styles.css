@@ -1,3 +1,8 @@
+/* Global Styles */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Kanit', sans-serif;
     background-color: #f0f2f5;
@@ -319,7 +324,7 @@ input[type="checkbox"] {
     width: 0%;
 }
 
-/* Set the width of the progress line based on the current step */
+/* Progress based on current step */
 .stepper[data-current-step="1"]::after {
     width: calc(0% - 10px);
 }
@@ -368,13 +373,13 @@ input[type="checkbox"] {
     transform: scale(1.2);
 }
 
-/* Step labels */
 .stepper-step-label {
     font-size: 0.9rem;
     color: #555555;
     margin-top: 8px;
 }
 
+/* Feedback Button */
 .feedback-button {
     margin-top: 20px;
     padding: 15px;
@@ -428,6 +433,27 @@ input[type="checkbox"] {
     .stepper-step-label {
         font-size: 0.8rem;
     }
+
+    /* Responsive Adjustments for Stepper */
+    .stepper {
+        margin-bottom: 20px;
+    }
+
+    .stepper::before,
+    .stepper::after {
+        top: 30%;
+        left: 5%;
+        right: 5%;
+    }
+
+    .stepper-step-circle {
+        width: 35px;
+        height: 35px;
+    }
+
+    .stepper-step-label {
+        font-size: 0.8rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -447,9 +473,94 @@ input[type="checkbox"] {
         font-size: 1.3rem;
     }
 
+    .stepper-step-label {
+        font-size: 0.7rem;
+    }
+
+    /* Further Responsive Adjustments for Stepper */
+    .stepper {
+        margin-bottom: 15px;
+    }
+
     .stepper::before,
     .stepper::after {
-        left: 5%;
-        right: 5%;
+        top: 35%;
+        left: 10%;
+        right: 10%;
+    }
+
+    .stepper-step-circle {
+        width: 30px;
+        height: 30px;
+    }
+
+    .stepper-step {
+        flex-direction: column;
+    }
+
+    /* Ensuring Modal is Responsive */
+    .modal-content {
+        width: 90%;
+        padding: 20px;
+    }
+
+    .modal-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .modal-content ul {
+        padding-left: 15px;
+    }
+
+    .modal-content button {
+        font-size: 1rem;
+        padding: 8px 16px;
+    }
+}
+
+/* Additional Stepper Styles for Smoothness and Accessibility */
+.stepper-step-circle:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);
+}
+
+.stepper-step-label {
+    pointer-events: none; /* Prevent text from being selectable/clickable */
+}
+
+/* Recommended Investments Display */
+#recommended-investments p span {
+    font-weight: bold;
+}
+
+/* Tax Amount and Effective Tax Rate Styling */
+.tax-amount {
+    color: #d9534f;
+    font-weight: bold;
+}
+
+.effective-tax-rate {
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* Ensuring Modal is Responsive */
+@media (max-width: 480px) {
+    .modal-content {
+        width: 90%;
+        padding: 20px;
+    }
+
+    .modal-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .modal-content ul {
+        padding-left: 15px;
+    }
+
+    .modal-content button {
+        font-size: 1rem;
+        padding: 8px 16px;
     }
 }
