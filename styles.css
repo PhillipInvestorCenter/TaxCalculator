@@ -298,8 +298,8 @@ input[type="checkbox"] {
     content: '';
     position: absolute;
     top: 26%;
-    left: 5%;
-    right: 5%;
+    left: 0%;
+    right: 0%;
     height: 4px;
     background-color: #e0e0e0;
     z-index: 1;
@@ -311,6 +311,7 @@ input[type="checkbox"] {
     position: absolute;
     top: 26%;
     left: 0%;
+    right: 0%;
     height: 4px;
     background-color: #007bff;
     z-index: 2;
