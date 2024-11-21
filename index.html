@@ -138,6 +138,8 @@
                 </select>
                 <div class="info">ลดหย่อนบุตรบุญธรรมคนละ 30,000 บาท สูงสุดไม่เกิน 3 คน</div>
 
+                <!-- Removed Social Security Field from here -->
+
                 <label>บิดามารดาของคุณที่อายุมากกว่า 60 ปี และมีรายได้ไม่เกิน 30,000 บาทต่อปี:</label>
                 <div class="checkbox-group">
                     <input type="checkbox" id="your_father">
@@ -297,9 +299,9 @@
                 <div class="info">ลดหย่อนได้ 10,000 บาท ต่อค่าก่อสร้าง 1 ล้านบาท สูงสุดไม่เกิน 100,000 บาท</div>
             </div>
 
-            <!-- Navigation Buttons -->
             <div class="navigation-buttons">
                 <button type="button" onclick="prevStep(3)">ย้อนกลับ</button>
+                <button type="button" onclick="calculateTax()">คำนวณภาษี</button>
             </div>
         </div>
 
@@ -333,9 +335,6 @@
                 <button type="button" onclick="resetData()">เริ่มใหม่</button>
             </div>
         </div>
-
-        <!-- Floating Calculate Tax Button -->
-        <button type="button" id="floating-calculate-button" onclick="calculateTax()" aria-label="คำนวณภาษี">คำนวณภาษี</button>
     </div>
 
     <!-- Modal for Error Messages -->
