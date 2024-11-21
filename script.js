@@ -2,7 +2,7 @@
 let total_income = 0;
 let monthly_income = 0; // Add monthly_income variable
 let expense = 0;
-const retirementFields = ['pension_insurance', 'pvd', 'rmf', 'nsf', 'ssf'];
+const retirementFields = ['pension_insurance', 'pvd', 'gpf','rmf', 'nsf', 'ssf'];
 let incomeTypeCheckboxes = null;
 let remaining_retirement_allowance = 0; // Global variable
 let isTaxCalculated = false; // Global variable to track if tax has been calculated
@@ -123,6 +123,7 @@ function nextStep(currentStep) {
     }
 }
 
+// Create by Suntiphab Vareenitisakul 3031, WB-PIC
 // Function to calculate Social Security contribution
 function calculateSocialSecurity() {
     let social_security = 0;
@@ -149,7 +150,7 @@ window.onload = function () {
         'annual_income', 'monthly_income', 'bonus_income', 'other_income',
         // Remove 'social_security' from here since it's auto-calculated
         'life_insurance', 'health_insurance', 'parent_health_insurance', 'pension_insurance',
-        'ssf', 'rmf', 'pvd', 'thaiesg', 'social_enterprise', 'nsf',
+        'ssf', 'rmf', 'pvd', 'gpf', 'thaiesg', 'social_enterprise', 'nsf',
         'home_loan_interest', 'donation', 'donation_education', 'donation_political',
         'easy_ereceipt', 'local_travel', 'new_home'
     ];
@@ -328,6 +329,7 @@ function validateStep(stepNumber) {
     }
 }
 
+// Create by Suntiphab Vareenitisakul 3031, WB-PIC
 // Function to calculate tax
 function calculateTax() {
     // Clear previous error messages
@@ -445,6 +447,14 @@ function calculateTax() {
         }
         pvd = Math.min(pvd, pvd_limit);
 
+        let gpf = parseNumber(document.getElementById('gpf').value);
+        let gpf_limit = Math.min(total_income * 0.30, 500000);
+        if (gpf > gpf_limit) {
+            errorMessages.push('กองทุนบำเหน็จบำนาญราชการ (กบข.) ไม่ควรเกิน 30% ของรายได้หรือ 500,000 บาท');
+            errorFields.push('gpf');
+        }
+        gpf = Math.min(gpf, gpf_limit);
+
         let ssf = parseNumber(document.getElementById('ssf').value);
         let ssf_limit = Math.min(total_income * 0.30, 200000);
         if (ssf > ssf_limit) {
@@ -477,14 +487,14 @@ function calculateTax() {
         social_enterprise = Math.min(social_enterprise, 100000);
 
         let nsf = parseNumber(document.getElementById('nsf').value);
-        if (nsf > 13200) {
-            errorMessages.push('เงินสมทบกองทุนการออมแห่งชาติ (กอช.) ไม่ควรเกิน 13,200 บาท');
+        if (nsf > 30000) {
+            errorMessages.push('เงินสมทบกองทุนการออมแห่งชาติ (กอช.) ไม่ควรเกิน 30,000 บาท');
             errorFields.push('nsf');
         }
-        nsf = Math.min(nsf, 13200);
+        nsf = Math.min(nsf, 30000);
 
         // Total retirement deductions (max 500,000 THB)
-        retirement_total = pension_insurance + pvd + rmf + nsf + ssf;
+        retirement_total = pension_insurance + pvd + gpf + rmf + nsf + ssf;
         if (retirement_total > 500000) {
             errorMessages.push('รวมค่าลดหย่อนกลุ่มเกษียณไม่ควรเกิน 500,000 บาท');
             errorFields.push('pension_insurance');
@@ -609,11 +619,12 @@ function calculateTax() {
     let current_ssf = parseNumber(document.getElementById('ssf').value) || 0;
     let current_rmf = parseNumber(document.getElementById('rmf').value) || 0;
     let current_pvd = parseNumber(document.getElementById('pvd').value) || 0;
+    let current_gpf = parseNumber(document.getElementById('gpf').value) || 0;
     let current_pension_insurance = parseNumber(document.getElementById('pension_insurance').value) || 0;
     let current_nsf = parseNumber(document.getElementById('nsf').value) || 0;
 
     // Total retirement contributions
-    let total_retirement_contributions = current_ssf + current_rmf + current_pvd + current_pension_insurance + current_nsf;
+    let total_retirement_contributions = current_ssf + current_rmf + current_pvd + current_gpf + current_pension_insurance + current_nsf;
 
     // Remaining retirement allowance
     remaining_retirement_allowance = retirement_total_limit - total_retirement_contributions;
@@ -663,10 +674,11 @@ function updateRetirementDeductions() {
     let ssf = parseNumber(document.getElementById('ssf').value) || 0;
     let rmf = parseNumber(document.getElementById('rmf').value) || 0;
     let pvd = parseNumber(document.getElementById('pvd').value) || 0;
+    let gpf = parseNumber(document.getElementById('gpf').value) || 0;
     let pension_insurance = parseNumber(document.getElementById('pension_insurance').value) || 0;
     let nsf = parseNumber(document.getElementById('nsf').value) || 0;
 
-    let total_retirement_contributions = ssf + rmf + pvd + pension_insurance + nsf;
+    let total_retirement_contributions = ssf + rmf + pvd + gpf + pension_insurance + nsf;
 
     let retirement_total_limit = 500000;
     remaining_retirement_allowance = retirement_total_limit - total_retirement_contributions;
@@ -727,6 +739,7 @@ function closeErrorModal() {
     }
 }
 
+// Create by Suntiphab Vareenitisakul 3031, WB-PIC
 // Function to edit data
 function editData() {
     // Return to step 3 to edit data
