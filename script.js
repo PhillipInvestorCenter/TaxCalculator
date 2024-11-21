@@ -2,7 +2,7 @@
 let total_income = 0;
 let monthly_income = 0; // Add monthly_income variable
 let expense = 0;
-const retirementFields = ['pension_insurance', 'pvd', 'gpf','rmf', 'nsf', 'ssf'];
+const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'nsf', 'ssf'];
 let incomeTypeCheckboxes = null;
 let remaining_retirement_allowance = 0; // Global variable
 let isTaxCalculated = false; // Global variable to track if tax has been calculated
@@ -11,7 +11,7 @@ let isTaxCalculated = false; // Global variable to track if tax has been calcula
 function startCalculator() {
     document.getElementById('landing-page').style.display = 'none';
     document.getElementById('main-container').style.display = 'block';
-    setActiveStep(1); // Add this line to set the first step as active
+    setActiveStep(1); // Set the first step as active
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -123,7 +123,6 @@ function nextStep(currentStep) {
     }
 }
 
-// Create by Suntiphab Vareenitisakul 3031, WB-PIC
 // Function to calculate Social Security contribution
 function calculateSocialSecurity() {
     let social_security = 0;
@@ -140,7 +139,7 @@ function calculateSocialSecurity() {
     }
 }
 
-// Modify the window.onload function to add event listener
+// Modify the window.onload function to add event listeners
 window.onload = function () {
     // Initialize incomeTypeCheckboxes
     incomeTypeCheckboxes = document.querySelectorAll('input[name="income_type"]');
@@ -329,7 +328,6 @@ function validateStep(stepNumber) {
     }
 }
 
-// Create by Suntiphab Vareenitisakul 3031, WB-PIC
 // Function to calculate tax
 function calculateTax() {
     // Clear previous error messages
@@ -526,7 +524,7 @@ function calculateTax() {
     if (document.getElementById('has_stimulus').checked) {
         let easy_ereceipt = parseNumber(document.getElementById('easy_ereceipt').value);
         if (easy_ereceipt > 50000) {
-            errorMessages.push('ช้อปดีมีคืน 2567 ไม่ควรเกิน 50,000 บาท');
+            errorMessages.push('Easy e-Receipt 2567 ไม่ควรเกิน 50,000 บาท');
             errorFields.push('easy_ereceipt');
         }
         easy_ereceipt = Math.min(easy_ereceipt, 50000);
@@ -662,6 +660,9 @@ function calculateTax() {
     // Set isTaxCalculated to true
     isTaxCalculated = true;
 
+    // Hide the floating calculate button after calculation
+    document.getElementById('floating-calculate-button').style.display = 'none';
+
     // Update stepper to step 4
     setActiveStep(4);
 
@@ -739,7 +740,6 @@ function closeErrorModal() {
     }
 }
 
-// Create by Suntiphab Vareenitisakul 3031, WB-PIC
 // Function to edit data
 function editData() {
     // Return to step 3 to edit data
@@ -748,8 +748,69 @@ function editData() {
 
 // Function to reset data
 function resetData() {
-    // Reload the page to reset all data
-    location.reload();
+    // Reset variables
+    total_income = 0;
+    monthly_income = 0;
+    expense = 0;
+    isTaxCalculated = false;
+
+    // Reset all input fields
+    document.querySelectorAll('input[type="text"]').forEach(function (input) {
+        // Reset to default values or empty strings as appropriate
+        if (input.id === 'bonus_income' || input.id === 'other_income') {
+            input.value = '0';
+        } else {
+            input.value = '';
+        }
+    });
+
+    // Uncheck all checkboxes
+    document.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+        checkbox.checked = false;
+    });
+
+    // Reset all select elements to their default values
+    document.querySelectorAll('select').forEach(function (select) {
+        select.selectedIndex = 0;
+    });
+
+    // Hide additional sections
+    document.getElementById('annual_income_section').style.display = 'none';
+    document.getElementById('monthly_income_section').style.display = 'none';
+    document.getElementById('other_income_section').style.display = 'none';
+    document.getElementById('insurance_section').style.display = 'none';
+    document.getElementById('donation_section').style.display = 'none';
+    document.getElementById('stimulus_section').style.display = 'none';
+    document.getElementById('social_security_section').style.display = 'none';
+
+    // Clear displayed values
+    document.getElementById('expense_display').innerText = '0';
+
+    // Clear errors
+    document.querySelectorAll('.error').forEach(function (el) {
+        el.innerText = '';
+    });
+
+    // Reset stepper
+    setActiveStep(1);
+
+    // Show Step 1 and hide other steps
+    showStep(1);
+
+    // Hide result section
+    document.getElementById('step-4').style.display = 'none';
+
+    // Hide Landing Page
+    document.getElementById('landing-page').style.display = 'none';
+
+    // Show main container if it's not visible
+    document.getElementById('main-container').style.display = 'block';
+
+    // Hide the floating calculate button
+    document.getElementById('floating-calculate-button').style.display = 'none';
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Function to go to investment section
@@ -831,6 +892,14 @@ function navigateToStep(stepNumber) {
 
     // Scroll to top smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Show or hide the floating calculate button
+    const floatingButton = document.getElementById('floating-calculate-button');
+    if (stepNumber === 3) {
+        floatingButton.style.display = 'block';
+    } else {
+        floatingButton.style.display = 'none';
+    }
 }
 
 // Function to show a specific step
