@@ -1,4 +1,3 @@
-/* Global Styles */
 body {
     font-family: 'Kanit', sans-serif;
     background-color: #f0f2f5;
@@ -13,7 +12,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    height: 100vh;
     background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
     color: #333333;
     text-align: center;
@@ -91,16 +90,9 @@ input[type="text"], select {
     font-size: 1.1rem;
 }
 
-input[type="text"]:focus, select:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-}
-
 .info {
     font-size: 1rem;
     color: #777777;
-    margin-top: 5px;
 }
 
 button {
@@ -133,6 +125,10 @@ button:hover {
 
 .section-insurance {
     background-color: #e8f8f5;
+}
+
+.section-investment {
+    background-color: #e0f7fa;
 }
 
 .section-donation {
@@ -271,7 +267,6 @@ input[type="checkbox"] {
     border-radius: 50px;
 }
 
-/* Recommended Investments Section */
 #recommended-investments {
     margin-top: 30px;
     padding: 20px;
@@ -303,7 +298,7 @@ input[type="checkbox"] {
     content: '';
     position: absolute;
     top: 26%;
-    left: 0%;
+    left: 5%;
     right: 5%;
     height: 4px;
     background-color: #e0e0e0;
@@ -316,7 +311,6 @@ input[type="checkbox"] {
     position: absolute;
     top: 26%;
     left: 0%;
-    right: 5%;
     height: 4px;
     background-color: #007bff;
     z-index: 2;
@@ -373,13 +367,13 @@ input[type="checkbox"] {
     transform: scale(1.2);
 }
 
+/* Step labels */
 .stepper-step-label {
     font-size: 0.9rem;
     color: #555555;
     margin-top: 8px;
 }
 
-/* Feedback Button */
 .feedback-button {
     margin-top: 20px;
     padding: 15px;
@@ -396,30 +390,6 @@ input[type="checkbox"] {
 
 .feedback-button:hover {
     background-color: #138496;
-    transform: scale(1.05);
-}
-
-/* Floating Calculate Tax Button Styles */
-#floating-calculate-button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 15px 25px;
-    background-color: #28a745;
-    color: #ffffff;
-    border: none;
-    border-radius: 50px;
-    font-size: 1.4rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s;
-    font-family: 'Kanit', sans-serif;
-    z-index: 1000; /* Ensure it appears above other elements */
-    display: none; /* Initially hidden */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-#floating-calculate-button:hover {
-    background-color: #218838;
     transform: scale(1.05);
 }
 
@@ -457,12 +427,6 @@ input[type="checkbox"] {
     .stepper-step-label {
         font-size: 0.8rem;
     }
-
-    .stepper::before,
-    .stepper::after {
-        left: 5%;
-        right: 5%;
-    }
 }
 
 @media (max-width: 480px) {
@@ -482,11 +446,16 @@ input[type="checkbox"] {
         font-size: 1.3rem;
     }
 
-    /* Adjust floating button for smaller screens */
-    #floating-calculate-button {
-        bottom: 15px;
-        right: 15px;
-        padding: 12px 20px;
-        font-size: 1.2rem;
+    .stepper::before,
+    .stepper::after {
+        left: 5%;
+        right: 5%;
     }
+}
+
+/* Style for expense_display */
+#expense_display {
+    color: #28a745; /* Green color */
+    font-size: 1.5em; /* 1.5 times the base font size */
+    font-weight: bold; /* Bold text */
 }
