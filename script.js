@@ -278,7 +278,69 @@ window.onload = function () {
             }
         });
     });
+
+    // Event listener for 'pension_insurance' field
+    document.getElementById('pension_insurance').addEventListener('blur', handlePensionInsuranceInput);
+
+    // Event listener for 'life_insurance' field
+    document.getElementById('life_insurance').addEventListener('blur', function () {
+        let lifeInsuranceInput = document.getElementById('life_insurance');
+        let lifeInsuranceValue = parseNumber(lifeInsuranceInput.value) || 0;
+
+        if (lifeInsuranceValue > 100000) {
+            lifeInsuranceValue = 100000;
+            lifeInsuranceInput.value = formatNumber(lifeInsuranceValue);
+            alert('เบี้ยประกันชีวิตไม่สามารถเกิน 100,000 บาท');
+        }
+    });
 };
+
+// Function to handle pension insurance input
+function handlePensionInsuranceInput() {
+    let pensionInput = document.getElementById('pension_insurance');
+    let lifeInsuranceInput = document.getElementById('life_insurance');
+
+    let pensionValue = parseNumber(pensionInput.value) || 0;
+    let lifeInsuranceValue = parseNumber(lifeInsuranceInput.value) || 0;
+
+    // Maximum limits
+    const maxLifeInsurance = 100000;
+    const maxPensionInsurance = 200000;
+    const combinedLimit = 300000;
+
+    // Calculate how much can be transferred to life insurance
+    let lifeInsuranceAvailable = maxLifeInsurance - lifeInsuranceValue;
+    lifeInsuranceAvailable = Math.max(0, lifeInsuranceAvailable);
+
+    // Transfer up to 100,000 Baht to life_insurance
+    let transferAmount = Math.min(pensionValue, lifeInsuranceAvailable);
+
+    // Update life insurance value
+    if (transferAmount > 0) {
+        lifeInsuranceValue += transferAmount;
+        lifeInsuranceInput.value = formatNumber(lifeInsuranceValue);
+    }
+
+    // Remaining amount stays in pension insurance
+    pensionValue = pensionValue - transferAmount;
+
+    // Apply pension insurance limit
+    if (pensionValue > maxPensionInsurance) {
+        pensionValue = maxPensionInsurance;
+        pensionInput.value = formatNumber(pensionValue);
+
+        // Check combined limit
+        let totalInsurance = pensionValue + lifeInsuranceValue;
+        if (totalInsurance > combinedLimit) {
+            let excess = totalInsurance - combinedLimit;
+            pensionValue -= excess;
+            pensionInput.value = formatNumber(pensionValue);
+            alert('ยอดรวมของเบี้ยประกันชีวิตและเบี้ยประกันชีวิตแบบบำนาญไม่ควรเกิน 300,000 บาท');
+        }
+    } else {
+        pensionInput.value = formatNumber(pensionValue);
+    }
+}
 
 // Function to validate a specific step
 function validateStep(stepNumber) {
@@ -438,6 +500,13 @@ function calculateTax() {
             errorFields.push('pension_insurance');
         }
         pension_insurance = Math.min(pension_insurance, 200000);
+
+        // Check combined limit of life_insurance and pension_insurance
+        let combinedInsurance = insurance_total + pension_insurance;
+        if (combinedInsurance > 300000) {
+            errorMessages.push('รวมเบี้ยประกันชีวิตและเบี้ยประกันชีวิตแบบบำนาญไม่ควรเกิน 300,000 บาท');
+            errorFields.push('pension_insurance');
+        }
 
         let pvd = parseNumber(document.getElementById('pvd').value);
         let pvd_limit = Math.min(total_income * 0.15, 500000);
