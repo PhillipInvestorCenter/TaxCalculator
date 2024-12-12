@@ -180,13 +180,6 @@ input[type="checkbox"] {
     font-size: 1.1rem;
 }
 
-/* Style for Expense Display in Step 2 */
-.expense-value {
-    color: #28a745; /* Green color */
-    font-size: 2em;  /* Increased font size */
-    font-weight: bold; /* Bold text */
-}
-
 /* Result Section */
 .step-content#step-4 h2 {
     color: #28a745;
@@ -290,30 +283,6 @@ input[type="checkbox"] {
 #recommended-investments p {
     font-size: 1.2rem;
     color: #333333;
-}
-
-/* Style for Withholding Tax Display */
-#result_withholding_tax {
-    color: #17a2b8; /* Teal color */
-    font-size: 1.3em;
-    font-weight: bold;
-}
-
-/* Summary Field Styles */
-.tax-due-real {
-    color: red;
-    font-weight: bold;
-    font-size: 1.5em;
-}
-
-.tax-credit-refund {
-    color: green;
-    font-weight: bold;
-    font-size: 1.5em;
-}
-
-#tax_summary {
-    margin-top: 20px;
 }
 
 /* Stepper Styles */
@@ -424,10 +393,6 @@ input[type="checkbox"] {
     transform: scale(1.05);
 }
 
-.sub-section {
-    margin-left: 40px; /* Adjust the value as needed */
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
@@ -486,4 +451,11 @@ input[type="checkbox"] {
         left: 5%;
         right: 5%;
     }
+}
+
+/* Style for expense_display */
+#expense_display {
+    color: #28a745; /* Green color */
+    font-size: 1.5em; /* 1.5 times the base font size */
+    font-weight: bold; /* Bold text */
 }
