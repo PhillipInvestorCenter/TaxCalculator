@@ -1,17 +1,18 @@
 // Variable declarations
 let total_income = 0;
-let monthly_income = 0; // Add monthly_income variable
+let monthly_income = 0; // Monthly income variable
 let expense = 0;
-const retirementFields = ['pension_insurance', 'pvd', 'gpf','rmf', 'nsf', 'ssf'];
+const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'nsf', 'ssf'];
 let incomeTypeCheckboxes = null;
 let remaining_retirement_allowance = 0; // Global variable
-let isTaxCalculated = false; // Global variable to track if tax has been calculated
+let isTaxCalculated = false; // Tracks if tax has been calculated
+let total_withholding_tax = 0; // New variable for withholding tax
 
 // Function to start the calculator
 function startCalculator() {
     document.getElementById('landing-page').style.display = 'none';
     document.getElementById('main-container').style.display = 'block';
-    setActiveStep(1); // Add this line to set the first step as active
+    setActiveStep(1); // Set the first step as active
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -31,7 +32,6 @@ function parseNumber(str) {
 // Function to move to the previous step
 function prevStep(currentStep) {
     if (currentStep > 1) {
-        // Move to the previous step
         const previousStep = currentStep - 1;
         setActiveStep(previousStep);
         showStep(previousStep);
@@ -74,7 +74,7 @@ function addCommaEvent(id) {
 function nextStep(currentStep) {
     if (validateStep(currentStep)) {
         if (currentStep === 1) {
-            // Perform calculations and updates specific to step 1
+            // Perform calculations specific to step 1
 
             // Get income type
             let incomeType = '';
@@ -110,6 +110,26 @@ function nextStep(currentStep) {
             // Display expense
             document.getElementById('expense_display').innerText = formatNumber(expense);
 
+            // Handle Withholding Tax for Annual Income
+            let withholding_tax_annual = 0;
+            const withholdingTaxAnnualCheckbox = document.getElementById('withholding_tax_annual_checkbox');
+            const withholdingTaxAnnualInput = document.getElementById('withholding_tax_annual_input');
+            if (withholdingTaxAnnualCheckbox.checked) {
+                withholding_tax_annual = parseNumber(withholdingTaxAnnualInput.value) || 0;
+            }
+
+            // Handle Withholding Tax for Monthly Income
+            let withholding_tax_monthly = 0;
+            const withholdingTaxMonthlyCheckbox = document.getElementById('withholding_tax_monthly_checkbox');
+            const withholdingTaxMonthlyInput = document.getElementById('withholding_tax_monthly_input');
+            if (withholdingTaxMonthlyCheckbox.checked) {
+                let monthly_withholding = parseNumber(withholdingTaxMonthlyInput.value) || 0;
+                withholding_tax_monthly = monthly_withholding * 12;
+            }
+
+            // Total Withholding Tax
+            total_withholding_tax = withholding_tax_annual + withholding_tax_monthly;
+
             // Update stepper to step 2
             setActiveStep(2);
 
@@ -123,7 +143,6 @@ function nextStep(currentStep) {
     }
 }
 
-// Create by Suntiphab Vareenitisakul 3031, WB-PIC
 // Function to calculate Social Security contribution
 function calculateSocialSecurity() {
     let social_security = 0;
@@ -136,11 +155,31 @@ function calculateSocialSecurity() {
         // Display the calculated value
         document.getElementById('social_security').value = formatNumber(social_security);
     } else {
-        document.getElementById('social_security').value = '';
+        document.getElementById('social_security').value = '0';
     }
 }
 
-// Modify the window.onload function to add event listener
+// Function to calculate total withholding tax
+function calculateTotalWithholdingTax() {
+    let withholding_tax_annual = 0;
+    const withholdingTaxAnnualCheckbox = document.getElementById('withholding_tax_annual_checkbox');
+    const withholdingTaxAnnualInput = document.getElementById('withholding_tax_annual_input');
+    if (withholdingTaxAnnualCheckbox.checked) {
+        withholding_tax_annual = parseNumber(withholdingTaxAnnualInput.value) || 0;
+    }
+
+    let withholding_tax_monthly = 0;
+    const withholdingTaxMonthlyCheckbox = document.getElementById('withholding_tax_monthly_checkbox');
+    const withholdingTaxMonthlyInput = document.getElementById('withholding_tax_monthly_input');
+    if (withholdingTaxMonthlyCheckbox.checked) {
+        let monthly_withholding = parseNumber(withholdingTaxMonthlyInput.value) || 0;
+        withholding_tax_monthly = monthly_withholding * 12;
+    }
+
+    return withholding_tax_annual + withholding_tax_monthly;
+}
+
+// Modify the window.onload function to add event listeners
 window.onload = function () {
     // Initialize incomeTypeCheckboxes
     incomeTypeCheckboxes = document.querySelectorAll('input[name="income_type"]');
@@ -148,11 +187,11 @@ window.onload = function () {
     // Attach event listeners to number fields
     let numberFields = [
         'annual_income', 'monthly_income', 'bonus_income', 'other_income',
-        // Remove 'social_security' from here since it's auto-calculated
         'life_insurance', 'health_insurance', 'parent_health_insurance', 'pension_insurance',
         'ssf', 'rmf', 'pvd', 'gpf', 'thaiesg', 'social_enterprise', 'nsf',
         'home_loan_interest', 'donation', 'donation_education', 'donation_political',
-        'easy_ereceipt', 'local_travel', 'new_home'
+        'easy_ereceipt', 'local_travel', 'new_home',
+        'withholding_tax_annual_input', 'withholding_tax_monthly_input' // Updated for withholding tax
     ];
 
     numberFields.forEach(function (id) {
@@ -172,6 +211,31 @@ window.onload = function () {
         }
     });
 
+    // Attach event listeners for withholding tax checkboxes
+    const withholdingTaxAnnualCheckbox = document.getElementById('withholding_tax_annual_checkbox');
+    const withholdingTaxAnnualSection = document.getElementById('withholding_tax_annual_section');
+    if (withholdingTaxAnnualCheckbox) {
+        withholdingTaxAnnualCheckbox.addEventListener('change', function () {
+            withholdingTaxAnnualSection.style.display = this.checked ? 'block' : 'none';
+            if (!this.checked) {
+                document.getElementById('withholding_tax_annual_input').value = '0';
+                total_withholding_tax = calculateTotalWithholdingTax();
+            }
+        });
+    }
+
+    const withholdingTaxMonthlyCheckbox = document.getElementById('withholding_tax_monthly_checkbox');
+    const withholdingTaxMonthlySection = document.getElementById('withholding_tax_monthly_section');
+    if (withholdingTaxMonthlyCheckbox) {
+        withholdingTaxMonthlyCheckbox.addEventListener('change', function () {
+            withholdingTaxMonthlySection.style.display = this.checked ? 'block' : 'none';
+            if (!this.checked) {
+                document.getElementById('withholding_tax_monthly_input').value = '0';
+                total_withholding_tax = calculateTotalWithholdingTax();
+            }
+        });
+    }
+
     // Handling income type selection
     incomeTypeCheckboxes.forEach(function (checkbox) {
         checkbox.addEventListener('change', function () {
@@ -181,14 +245,22 @@ window.onload = function () {
                 }
             }, this);
 
-            // Hide both income sections first
+            // Hide all income-related sections
             document.getElementById('annual_income_section').style.display = 'none';
+            document.getElementById('withholding_tax_annual_checkbox_section').style.display = 'none';
+            document.getElementById('withholding_tax_annual_section').style.display = 'none';
             document.getElementById('monthly_income_section').style.display = 'none';
+            document.getElementById('withholding_tax_monthly_checkbox_section').style.display = 'none';
+            document.getElementById('withholding_tax_monthly_section').style.display = 'none';
 
             if (this.value === 'annual' && this.checked) {
                 document.getElementById('annual_income_section').style.display = 'block';
+                // Show the withholding tax checkbox for annual income
+                document.getElementById('withholding_tax_annual_checkbox_section').style.display = 'block';
             } else if (this.value === 'monthly' && this.checked) {
                 document.getElementById('monthly_income_section').style.display = 'block';
+                // Show the withholding tax checkbox for monthly income
+                document.getElementById('withholding_tax_monthly_checkbox_section').style.display = 'block';
             }
         });
     });
@@ -200,12 +272,11 @@ window.onload = function () {
 
     // Event listener for "Do you contribute to Social Security?" checkbox
     document.getElementById('has_social_security').addEventListener('change', function () {
+        document.getElementById('social_security_section').style.display = this.checked ? 'block' : 'none';
         if (this.checked) {
-            document.getElementById('social_security_section').style.display = 'block';
             calculateSocialSecurity(); // Calculate and display Social Security contribution
         } else {
-            document.getElementById('social_security_section').style.display = 'none';
-            document.getElementById('social_security').value = '';
+            document.getElementById('social_security').value = '0';
         }
     });
 
@@ -225,6 +296,15 @@ window.onload = function () {
             monthly_income = annual_income / 12;
             calculateSocialSecurity();
         }
+    });
+
+    // Event listeners for withholding tax inputs to recalculate
+    document.getElementById('withholding_tax_annual_input').addEventListener('input', function () {
+        total_withholding_tax = calculateTotalWithholdingTax();
+    });
+
+    document.getElementById('withholding_tax_monthly_input').addEventListener('input', function () {
+        total_withholding_tax = calculateTotalWithholdingTax();
     });
 
     // Populate children options
@@ -383,6 +463,36 @@ function validateStep(stepNumber) {
             }
         }
 
+        // Validate Withholding Tax for Annual Income
+        const withholdingTaxAnnualCheckbox = document.getElementById('withholding_tax_annual_checkbox');
+        const withholdingTaxAnnualInput = document.getElementById('withholding_tax_annual_input');
+        if (withholdingTaxAnnualCheckbox.checked) {
+            let withholdingTaxAnnual = parseNumber(withholdingTaxAnnualInput.value);
+            if (withholdingTaxAnnual === 0) {
+                document.getElementById('withholding_tax_annual_error').innerText = 'กรุณากรอกจำนวนภาษีที่หัก ณ ที่จ่าย';
+                return false;
+            } else {
+                document.getElementById('withholding_tax_annual_error').innerText = '';
+            }
+        } else {
+            document.getElementById('withholding_tax_annual_error').innerText = '';
+        }
+
+        // Validate Withholding Tax for Monthly Income
+        const withholdingTaxMonthlyCheckbox = document.getElementById('withholding_tax_monthly_checkbox');
+        const withholdingTaxMonthlyInput = document.getElementById('withholding_tax_monthly_input');
+        if (withholdingTaxMonthlyCheckbox.checked) {
+            let withholdingTaxMonthly = parseNumber(withholdingTaxMonthlyInput.value);
+            if (withholdingTaxMonthly === 0) {
+                document.getElementById('withholding_tax_monthly_error').innerText = 'กรุณากรอกจำนวนภาษีที่หัก ณ ที่จ่ายต่อเดือน';
+                return false;
+            } else {
+                document.getElementById('withholding_tax_monthly_error').innerText = '';
+            }
+        } else {
+            document.getElementById('withholding_tax_monthly_error').innerText = '';
+        }
+
         // Validation passed
         return true;
     } else {
@@ -391,7 +501,6 @@ function validateStep(stepNumber) {
     }
 }
 
-// Create by Suntiphab Vareenitisakul 3031, WB-PIC
 // Function to calculate tax
 function calculateTax() {
     // Clear previous error messages
@@ -450,7 +559,6 @@ function calculateTax() {
     let social_security = 0;
     if (document.getElementById('has_social_security').checked) {
         social_security = parseNumber(document.getElementById('social_security').value);
-        // No need to validate since it's auto-calculated
     }
 
     let total_personal_deductions = personal_allowance + spouse_allowance + child_allowance + parents_allowance + disabled_allowance + social_security;
@@ -483,7 +591,7 @@ function calculateTax() {
         insurance_total = life_insurance + health_insurance;
         if (insurance_total > 100000) {
             errorMessages.push('รวมเบี้ยประกันชีวิตและสุขภาพไม่ควรเกิน 100,000 บาท');
-            errorFields.push('life_insurance');
+            errorFields.push('health_insurance');
         }
         insurance_total = Math.min(insurance_total, 100000);
 
@@ -500,13 +608,6 @@ function calculateTax() {
             errorFields.push('pension_insurance');
         }
         pension_insurance = Math.min(pension_insurance, 200000);
-
-        // Check combined limit of life_insurance and pension_insurance
-        let combinedInsurance = insurance_total + pension_insurance;
-        if (combinedInsurance > 300000) {
-            errorMessages.push('รวมเบี้ยประกันชีวิตและเบี้ยประกันชีวิตแบบบำนาญไม่ควรเกิน 300,000 บาท');
-            errorFields.push('pension_insurance');
-        }
 
         let pvd = parseNumber(document.getElementById('pvd').value);
         let pvd_limit = Math.min(total_income * 0.15, 500000);
@@ -631,10 +732,10 @@ function calculateTax() {
         return;
     }
 
-    // Total deductions
-    let total_deductions = expense + total_personal_deductions + total_investment_deductions + total_stimulus_deductions;
+    // Total deductions (excluding withholding tax)
+    let total_deductions = expense + total_personal_deductions + total_investment_deductions + total_stimulus_deductions + total_donation_deductions;
 
-    // Taxable income after preliminary deductions
+    // Taxable income after all deductions
     let taxable_income = total_income - total_deductions;
     if (taxable_income < 0) taxable_income = 0;
 
@@ -646,13 +747,14 @@ function calculateTax() {
         }
     }
 
-    total_deductions += total_donation_deductions;
+    // Adjust total deductions after donation limit
+    total_deductions = expense + total_personal_deductions + total_investment_deductions + total_stimulus_deductions + total_donation_deductions;
 
     // Net income
     let net_income = total_income - total_deductions;
     if (net_income < 0) net_income = 0;
 
-    // Tax calculation
+    // Tax calculation based on taxable income
     let tax = 0;
     if (net_income <= 150000) {
         tax = 0;
@@ -711,8 +813,8 @@ function calculateTax() {
     let recommended_rmf = Math.min(remaining_rmf_limit, remaining_retirement_allowance);
 
     // Calculate recommended_thaiesg
-    let thaiesg_limit = Math.min(total_income * 0.30, 300000);
     let current_thaiesg = parseNumber(document.getElementById('thaiesg').value) || 0;
+    let thaiesg_limit = Math.min(total_income * 0.30, 300000);
     let recommended_thaiesg = Math.max(0, Math.min(thaiesg_limit - current_thaiesg, total_income * 0.30 - current_thaiesg));
 
     // Display results
@@ -720,8 +822,42 @@ function calculateTax() {
     document.getElementById('result_expense').innerText = formatNumber(expense);
     document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
     document.getElementById('result_net_income').innerText = formatNumber(net_income);
-    document.getElementById('result_tax').innerText = formatNumber(tax) + ' บาท';
     document.getElementById('result_effective_tax_rate').innerText = effective_tax_rate.toFixed(2) + '%';
+
+    // Display the withholding tax only if it is greater than 0
+    let withholdingTaxParent = document.getElementById('result_withholding_tax').parentElement;
+    if (total_withholding_tax > 0) {
+        document.getElementById('result_withholding_tax').innerText = formatNumber(total_withholding_tax);
+        withholdingTaxParent.style.display = 'block';
+    } else {
+        withholdingTaxParent.style.display = 'none';
+    }
+
+    // Calculate X = Tax due - Withholding Tax
+    let X = tax - total_withholding_tax;
+
+    // Display summary based on X
+    const taxSummaryDiv = document.getElementById('tax_summary');
+    const taxDueReal = document.getElementById('tax_due_real');
+    const taxCreditRefund = document.getElementById('tax_credit_refund');
+
+    if (X > 0) {
+        taxDueReal.innerText = `ภาษีที่ต้องชำระจริง: ${formatNumber(X)} บาท`;
+        taxDueReal.style.color = 'red';
+        taxDueReal.style.fontWeight = 'bold';
+        taxDueReal.style.fontSize = '1.5em';
+        taxCreditRefund.innerText = '';
+        taxSummaryDiv.style.display = 'block';
+    } else if (X < 0) {
+        taxCreditRefund.innerText = `จำนวนเงินที่คุณต้องขอเครดิตคืน: ${formatNumber(Math.abs(X))} บาท`;
+        taxCreditRefund.style.color = 'green';
+        taxCreditRefund.style.fontWeight = 'bold';
+        taxCreditRefund.style.fontSize = '1.5em';
+        taxDueReal.innerText = '';
+        taxSummaryDiv.style.display = 'block';
+    } else {
+        taxSummaryDiv.style.display = 'none';
+    }
 
     // Update recommended investments display
     updateInvestmentDisplay('max_ssf', recommended_ssf);
@@ -808,7 +944,6 @@ function closeErrorModal() {
     }
 }
 
-// Create by Suntiphab Vareenitisakul 3031, WB-PIC
 // Function to edit data
 function editData() {
     // Return to step 3 to edit data
@@ -822,11 +957,12 @@ function resetData() {
     monthly_income = 0;
     expense = 0;
     isTaxCalculated = false;
+    total_withholding_tax = 0;
 
     // Reset all input fields
     document.querySelectorAll('input[type="text"]').forEach(function(input) {
         // Reset to default values or empty strings as appropriate
-        if (input.id === 'bonus_income' || input.id === 'other_income') {
+        if (input.id === 'bonus_income' || input.id === 'other_income' || input.id === 'withholding_tax_annual_input' || input.id === 'withholding_tax_monthly_input') {
             input.value = '0';
         } else {
             input.value = '';
@@ -845,7 +981,11 @@ function resetData() {
 
     // Hide additional sections
     document.getElementById('annual_income_section').style.display = 'none';
+    document.getElementById('withholding_tax_annual_checkbox_section').style.display = 'none';
+    document.getElementById('withholding_tax_annual_section').style.display = 'none';
     document.getElementById('monthly_income_section').style.display = 'none';
+    document.getElementById('withholding_tax_monthly_checkbox_section').style.display = 'none';
+    document.getElementById('withholding_tax_monthly_section').style.display = 'none';
     document.getElementById('other_income_section').style.display = 'none';
     document.getElementById('insurance_section').style.display = 'none';
     document.getElementById('donation_section').style.display = 'none';
@@ -854,6 +994,8 @@ function resetData() {
 
     // Clear displayed values
     document.getElementById('expense_display').innerText = '0';
+    document.getElementById('result_withholding_tax').innerText = '0';
+    document.getElementById('tax_summary').style.display = 'none';
 
     // Clear errors
     document.querySelectorAll('.error').forEach(function(el) {
