@@ -6,7 +6,7 @@ const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'nsf', 'ssf'
 let incomeTypeCheckboxes = null;
 let remaining_retirement_allowance = 0; // Global variable
 let isTaxCalculated = false; // Tracks if tax has been calculated
-let total_withholding_tax = 0; // New variable for withholding tax
+let total_withholding_tax = 0; // Will be calculated from selected income type only
 
 // Function to start the calculator
 function startCalculator() {
@@ -42,7 +42,7 @@ function prevStep(currentStep) {
 function addCommaEvent(id) {
     let input = document.getElementById(id);
     if (input) {
-        input.addEventListener('input', function (e) {
+        input.addEventListener('input', function () {
             let cursorPosition = this.selectionStart;
             let value = this.value.replace(/,/g, '');
             if (value === '') {
@@ -68,6 +68,34 @@ function addCommaEvent(id) {
             }
         });
     }
+}
+
+// Updated calculateTotalWithholdingTax function to only consider the currently selected income type
+function calculateTotalWithholdingTax() {
+    const selectedIncomeType = document.querySelector('input[name="income_type"]:checked');
+    if (!selectedIncomeType) return 0; // If no income type selected, no withholding tax
+
+    let total_withholding = 0;
+
+    if (selectedIncomeType.value === 'annual') {
+        // Only consider annual withholding tax
+        const withholdingTaxAnnualCheckbox = document.getElementById('withholding_tax_annual_checkbox');
+        const withholdingTaxAnnualInput = document.getElementById('withholding_tax_annual_input');
+        if (withholdingTaxAnnualCheckbox && withholdingTaxAnnualCheckbox.checked) {
+            const annualTax = parseNumber(withholdingTaxAnnualInput.value) || 0;
+            total_withholding += annualTax;
+        }
+    } else if (selectedIncomeType.value === 'monthly') {
+        // Only consider monthly withholding tax
+        const withholdingTaxMonthlyCheckbox = document.getElementById('withholding_tax_monthly_checkbox');
+        const withholdingTaxMonthlyInput = document.getElementById('withholding_tax_monthly_input');
+        if (withholdingTaxMonthlyCheckbox && withholdingTaxMonthlyCheckbox.checked) {
+            const monthlyTax = parseNumber(withholdingTaxMonthlyInput.value) || 0;
+            total_withholding += monthlyTax * 12; // Convert monthly tax to annual total
+        }
+    }
+
+    return total_withholding;
 }
 
 // Function to move to the next step
@@ -110,25 +138,8 @@ function nextStep(currentStep) {
             // Display expense
             document.getElementById('expense_display').innerText = formatNumber(expense);
 
-            // Handle Withholding Tax for Annual Income
-            let withholding_tax_annual = 0;
-            const withholdingTaxAnnualCheckbox = document.getElementById('withholding_tax_annual_checkbox');
-            const withholdingTaxAnnualInput = document.getElementById('withholding_tax_annual_input');
-            if (withholdingTaxAnnualCheckbox.checked) {
-                withholding_tax_annual = parseNumber(withholdingTaxAnnualInput.value) || 0;
-            }
-
-            // Handle Withholding Tax for Monthly Income
-            let withholding_tax_monthly = 0;
-            const withholdingTaxMonthlyCheckbox = document.getElementById('withholding_tax_monthly_checkbox');
-            const withholdingTaxMonthlyInput = document.getElementById('withholding_tax_monthly_input');
-            if (withholdingTaxMonthlyCheckbox.checked) {
-                let monthly_withholding = parseNumber(withholdingTaxMonthlyInput.value) || 0;
-                withholding_tax_monthly = monthly_withholding * 12;
-            }
-
-            // Total Withholding Tax
-            total_withholding_tax = withholding_tax_annual + withholding_tax_monthly;
+            // Calculate total withholding tax based on current selection
+            total_withholding_tax = calculateTotalWithholdingTax();
 
             // Update stepper to step 2
             setActiveStep(2);
@@ -159,27 +170,7 @@ function calculateSocialSecurity() {
     }
 }
 
-// Function to calculate total withholding tax
-function calculateTotalWithholdingTax() {
-    let withholding_tax_annual = 0;
-    const withholdingTaxAnnualCheckbox = document.getElementById('withholding_tax_annual_checkbox');
-    const withholdingTaxAnnualInput = document.getElementById('withholding_tax_annual_input');
-    if (withholdingTaxAnnualCheckbox.checked) {
-        withholding_tax_annual = parseNumber(withholdingTaxAnnualInput.value) || 0;
-    }
-
-    let withholding_tax_monthly = 0;
-    const withholdingTaxMonthlyCheckbox = document.getElementById('withholding_tax_monthly_checkbox');
-    const withholdingTaxMonthlyInput = document.getElementById('withholding_tax_monthly_input');
-    if (withholdingTaxMonthlyCheckbox.checked) {
-        let monthly_withholding = parseNumber(withholdingTaxMonthlyInput.value) || 0;
-        withholding_tax_monthly = monthly_withholding * 12;
-    }
-
-    return withholding_tax_annual + withholding_tax_monthly;
-}
-
-// Modify the window.onload function to add event listeners
+// Modify window.onload to add event listeners
 window.onload = function () {
     // Initialize incomeTypeCheckboxes
     incomeTypeCheckboxes = document.querySelectorAll('input[name="income_type"]');
@@ -191,7 +182,7 @@ window.onload = function () {
         'ssf', 'rmf', 'pvd', 'gpf', 'thaiesg', 'social_enterprise', 'nsf',
         'home_loan_interest', 'donation', 'donation_education', 'donation_political',
         'easy_ereceipt', 'local_travel', 'new_home',
-        'withholding_tax_annual_input', 'withholding_tax_monthly_input' // Updated for withholding tax
+        'withholding_tax_annual_input', 'withholding_tax_monthly_input'
     ];
 
     numberFields.forEach(function (id) {
@@ -211,7 +202,6 @@ window.onload = function () {
         }
     });
 
-    // Attach event listeners for withholding tax checkboxes
     const withholdingTaxAnnualCheckbox = document.getElementById('withholding_tax_annual_checkbox');
     const withholdingTaxAnnualSection = document.getElementById('withholding_tax_annual_section');
     if (withholdingTaxAnnualCheckbox) {
@@ -236,9 +226,10 @@ window.onload = function () {
         });
     }
 
-    // Handling income type selection
+    // Handling income type selection and resetting withholding fields
     incomeTypeCheckboxes.forEach(function (checkbox) {
         checkbox.addEventListener('change', function () {
+            // Uncheck other income type and reset values
             incomeTypeCheckboxes.forEach(function (box) {
                 if (box !== this) {
                     box.checked = false;
@@ -253,15 +244,23 @@ window.onload = function () {
             document.getElementById('withholding_tax_monthly_checkbox_section').style.display = 'none';
             document.getElementById('withholding_tax_monthly_section').style.display = 'none';
 
+            // Reset withholding tax fields when switching type
+            document.getElementById('withholding_tax_annual_checkbox').checked = false;
+            document.getElementById('withholding_tax_annual_input').value = '0';
+
+            document.getElementById('withholding_tax_monthly_checkbox').checked = false;
+            document.getElementById('withholding_tax_monthly_input').value = '0';
+
             if (this.value === 'annual' && this.checked) {
                 document.getElementById('annual_income_section').style.display = 'block';
-                // Show the withholding tax checkbox for annual income
                 document.getElementById('withholding_tax_annual_checkbox_section').style.display = 'block';
             } else if (this.value === 'monthly' && this.checked) {
                 document.getElementById('monthly_income_section').style.display = 'block';
-                // Show the withholding tax checkbox for monthly income
                 document.getElementById('withholding_tax_monthly_checkbox_section').style.display = 'block';
             }
+
+            // Recalculate total withholding tax for the newly selected income type
+            total_withholding_tax = calculateTotalWithholdingTax();
         });
     });
 
@@ -270,11 +269,11 @@ window.onload = function () {
         document.getElementById('other_income_section').style.display = this.checked ? 'block' : 'none';
     });
 
-    // Event listener for "Do you contribute to Social Security?" checkbox
+    // Social security checkbox
     document.getElementById('has_social_security').addEventListener('change', function () {
         document.getElementById('social_security_section').style.display = this.checked ? 'block' : 'none';
         if (this.checked) {
-            calculateSocialSecurity(); // Calculate and display Social Security contribution
+            calculateSocialSecurity();
         } else {
             document.getElementById('social_security').value = '0';
         }
@@ -282,27 +281,26 @@ window.onload = function () {
 
     // Recalculate Social Security when income changes
     document.getElementById('monthly_income').addEventListener('input', function () {
-        let incomeType = document.querySelector('input[name="income_type"]:checked').value;
-        if (incomeType === 'monthly') {
+        let incomeType = document.querySelector('input[name="income_type"]:checked');
+        if (incomeType && incomeType.value === 'monthly') {
             monthly_income = parseNumber(this.value) || 0;
             calculateSocialSecurity();
         }
     });
 
     document.getElementById('annual_income').addEventListener('input', function () {
-        let incomeType = document.querySelector('input[name="income_type"]:checked').value;
-        if (incomeType === 'annual') {
+        let incomeType = document.querySelector('input[name="income_type"]:checked');
+        if (incomeType && incomeType.value === 'annual') {
             let annual_income = parseNumber(this.value) || 0;
             monthly_income = annual_income / 12;
             calculateSocialSecurity();
         }
     });
 
-    // Event listeners for withholding tax inputs to recalculate
+    // Event listeners for withholding tax inputs
     document.getElementById('withholding_tax_annual_input').addEventListener('input', function () {
         total_withholding_tax = calculateTotalWithholdingTax();
     });
-
     document.getElementById('withholding_tax_monthly_input').addEventListener('input', function () {
         total_withholding_tax = calculateTotalWithholdingTax();
     });
@@ -310,7 +308,7 @@ window.onload = function () {
     // Populate children options
     populateChildrenOptions();
 
-    // Event listeners for additional deduction sections
+    // Additional deduction sections toggles
     document.getElementById('has_insurance').addEventListener('change', function () {
         document.getElementById('insurance_section').style.display = this.checked ? 'block' : 'none';
         updateRetirementDeductions();
@@ -322,7 +320,7 @@ window.onload = function () {
         document.getElementById('stimulus_section').style.display = this.checked ? 'block' : 'none';
     });
 
-    // Event listeners for retirement deduction fields
+    // Retirement fields
     retirementFields.forEach(function (field) {
         let elem = document.getElementById(field);
         if (elem) {
@@ -330,39 +328,31 @@ window.onload = function () {
         }
     });
 
-    // Event listeners for stepper steps
+    // Stepper steps navigation
     const stepperSteps = document.querySelectorAll('.stepper .stepper-step');
     stepperSteps.forEach(function (step) {
         step.addEventListener('click', function () {
             const targetStep = parseInt(this.getAttribute('data-step'));
 
-            // Get current step (the active step)
             const currentStepElement = document.querySelector('.stepper .stepper-step.active');
             const currentStep = parseInt(currentStepElement.getAttribute('data-step'));
 
             if (currentStep === 1 && targetStep !== 1) {
-                // User is on Step 1 and trying to navigate to another step
                 if (validateStep(1)) {
-                    // Validation passed, navigate to target step
                     navigateToStep(targetStep);
-                } else {
-                    // Validation failed, do not navigate
-                    // The validateStep function already displays validation messages
                 }
             } else if (!isTaxCalculated && targetStep === 4) {
-                // Prevent navigation to Step 4 before tax is calculated
                 alert('กรุณาคลิกปุ่ม "คำนวณภาษี" เพื่อดูผลการคำนวณ');
             } else {
-                // Allow navigation
                 navigateToStep(targetStep);
             }
         });
     });
 
-    // Event listener for 'pension_insurance' field
+    // Pension insurance field blur event
     document.getElementById('pension_insurance').addEventListener('blur', handlePensionInsuranceInput);
 
-    // Event listener for 'life_insurance' field
+    // Life insurance input limit
     document.getElementById('life_insurance').addEventListener('blur', function () {
         let lifeInsuranceInput = document.getElementById('life_insurance');
         let lifeInsuranceValue = parseNumber(lifeInsuranceInput.value) || 0;
@@ -375,7 +365,7 @@ window.onload = function () {
     });
 };
 
-// Function to handle pension insurance input
+// Handle pension insurance input
 function handlePensionInsuranceInput() {
     let pensionInput = document.getElementById('pension_insurance');
     let lifeInsuranceInput = document.getElementById('life_insurance');
@@ -383,33 +373,26 @@ function handlePensionInsuranceInput() {
     let pensionValue = parseNumber(pensionInput.value) || 0;
     let lifeInsuranceValue = parseNumber(lifeInsuranceInput.value) || 0;
 
-    // Maximum limits
     const maxLifeInsurance = 100000;
     const maxPensionInsurance = 200000;
     const combinedLimit = 300000;
 
-    // Calculate how much can be transferred to life insurance
     let lifeInsuranceAvailable = maxLifeInsurance - lifeInsuranceValue;
     lifeInsuranceAvailable = Math.max(0, lifeInsuranceAvailable);
 
-    // Transfer up to 100,000 Baht to life_insurance
     let transferAmount = Math.min(pensionValue, lifeInsuranceAvailable);
 
-    // Update life insurance value
     if (transferAmount > 0) {
         lifeInsuranceValue += transferAmount;
         lifeInsuranceInput.value = formatNumber(lifeInsuranceValue);
     }
 
-    // Remaining amount stays in pension insurance
     pensionValue = pensionValue - transferAmount;
 
-    // Apply pension insurance limit
     if (pensionValue > maxPensionInsurance) {
         pensionValue = maxPensionInsurance;
         pensionInput.value = formatNumber(pensionValue);
 
-        // Check combined limit
         let totalInsurance = pensionValue + lifeInsuranceValue;
         if (totalInsurance > combinedLimit) {
             let excess = totalInsurance - combinedLimit;
@@ -422,12 +405,9 @@ function handlePensionInsuranceInput() {
     }
 }
 
-// Function to validate a specific step
+// Validate steps
 function validateStep(stepNumber) {
     if (stepNumber === 1) {
-        // Perform validation for step 1
-
-        // Check if income type is selected
         let incomeTypeSelected = false;
         let incomeType = '';
         incomeTypeCheckboxes.forEach(function (checkbox) {
@@ -444,7 +424,6 @@ function validateStep(stepNumber) {
             document.getElementById('income_type_error').innerText = '';
         }
 
-        // Get income data
         if (incomeType === 'annual') {
             let annual_income = parseNumber(document.getElementById('annual_income').value);
             if (annual_income === 0) {
@@ -493,17 +472,14 @@ function validateStep(stepNumber) {
             document.getElementById('withholding_tax_monthly_error').innerText = '';
         }
 
-        // Validation passed
         return true;
     } else {
-        // No validation needed for other steps
         return true;
     }
 }
 
-// Function to calculate tax
+// Calculate tax
 function calculateTax() {
-    // Clear previous error messages
     document.querySelectorAll('.error').forEach(function (el) {
         el.innerText = '';
     });
@@ -516,7 +492,7 @@ function calculateTax() {
     let spouse = document.getElementById('spouse').value;
     let spouse_allowance = (spouse === 'yes') ? 60000 : 0;
 
-    // Legal children
+    // Children
     let children_own = parseInt(document.getElementById('children_own').value) || 0;
     let child_allowance = 0;
     for (let i = 1; i <= children_own; i++) {
@@ -527,14 +503,12 @@ function calculateTax() {
         }
     }
 
-    // Adopted children
     let children_adopted = parseInt(document.getElementById('children_adopted').value) || 0;
-    if (children_adopted > 3) children_adopted = 3; // Max 3
+    if (children_adopted > 3) children_adopted = 3;
     child_allowance += children_adopted * 30000;
 
     // Parents
     let parents_allowance = 0;
-
     if (document.getElementById('your_father').checked) {
         parents_allowance += 30000;
     }
@@ -547,15 +521,11 @@ function calculateTax() {
     if (document.getElementById('spouse_mother').checked) {
         parents_allowance += 30000;
     }
-
-    // Max 120,000 THB
     if (parents_allowance > 120000) parents_allowance = 120000;
 
-    // Disabled persons
     let disabled_persons = parseInt(document.getElementById('disabled_persons').value) || 0;
     let disabled_allowance = disabled_persons * 60000;
 
-    // Social security
     let social_security = 0;
     if (document.getElementById('has_social_security').checked) {
         social_security = parseNumber(document.getElementById('social_security').value);
@@ -566,9 +536,7 @@ function calculateTax() {
     // Investment deductions
     let total_investment_deductions = 0;
 
-    // Retirement deductions
     let retirement_total = 0;
-
     let insurance_total = 0;
     let parent_health_insurance = 0;
 
@@ -587,7 +555,6 @@ function calculateTax() {
         }
         health_insurance = Math.min(health_insurance, 25000);
 
-        // Total insurance
         insurance_total = life_insurance + health_insurance;
         if (insurance_total > 100000) {
             errorMessages.push('รวมเบี้ยประกันชีวิตและสุขภาพไม่ควรเกิน 100,000 บาท');
@@ -663,7 +630,6 @@ function calculateTax() {
         }
         nsf = Math.min(nsf, 30000);
 
-        // Total retirement deductions (max 500,000 THB)
         retirement_total = pension_insurance + pvd + gpf + rmf + nsf + ssf;
         if (retirement_total > 500000) {
             errorMessages.push('รวมค่าลดหย่อนกลุ่มเกษียณไม่ควรเกิน 500,000 บาท');
@@ -678,9 +644,7 @@ function calculateTax() {
     let total_donation_deductions = 0;
     if (document.getElementById('has_donation').checked) {
         let donation = parseNumber(document.getElementById('donation').value);
-
         let donation_education = parseNumber(document.getElementById('donation_education').value) * 2;
-
         let donation_political = parseNumber(document.getElementById('donation_political').value);
         if (donation_political > 10000) {
             errorMessages.push('เงินบริจาคพรรคการเมืองไม่ควรเกิน 10,000 บาท');
@@ -726,20 +690,16 @@ function calculateTax() {
         total_stimulus_deductions = easy_ereceipt + local_travel + home_loan_interest + new_home_deduction;
     }
 
-    // If there are errors, show the error modal
     if (errorMessages.length > 0) {
         showErrorModal(errorMessages, errorFields);
         return;
     }
 
-    // Total deductions (excluding withholding tax)
     let total_deductions = expense + total_personal_deductions + total_investment_deductions + total_stimulus_deductions + total_donation_deductions;
-
-    // Taxable income after all deductions
     let taxable_income = total_income - total_deductions;
     if (taxable_income < 0) taxable_income = 0;
 
-    // Calculate donation deduction (max 10% of taxable income)
+    // Donation limit 10% rule
     if (document.getElementById('has_donation').checked) {
         let donation_limit = taxable_income * 0.10;
         if (total_donation_deductions > donation_limit) {
@@ -747,14 +707,11 @@ function calculateTax() {
         }
     }
 
-    // Adjust total deductions after donation limit
     total_deductions = expense + total_personal_deductions + total_investment_deductions + total_stimulus_deductions + total_donation_deductions;
 
-    // Net income
     let net_income = total_income - total_deductions;
     if (net_income < 0) net_income = 0;
 
-    // Tax calculation based on taxable income
     let tax = 0;
     if (net_income <= 150000) {
         tax = 0;
@@ -774,19 +731,15 @@ function calculateTax() {
         tax = ((net_income - 5000000) * 0.35) + 1265000;
     }
 
-    // Effective tax rate
     let effective_tax_rate = 0;
     if (total_income > 0) {
         effective_tax_rate = (tax / total_income) * 100;
     }
 
-    // Recommended investment amounts
-    // Calculate maximum limits based on income
-    let ssf_limit = Math.min(total_income * 0.30, 200000); // SSF: 30% of income, max 200,000
-    let rmf_limit = Math.min(total_income * 0.30, 500000); // RMF: 30% of income, max 500,000
-    let retirement_total_limit = 500000; // Total retirement deductions limit
+    let ssf_limit = Math.min(total_income * 0.30, 200000); 
+    let rmf_limit = Math.min(total_income * 0.30, 500000); 
+    let retirement_total_limit = 500000; 
 
-    // Current investments
     let current_ssf = parseNumber(document.getElementById('ssf').value) || 0;
     let current_rmf = parseNumber(document.getElementById('rmf').value) || 0;
     let current_pvd = parseNumber(document.getElementById('pvd').value) || 0;
@@ -794,37 +747,31 @@ function calculateTax() {
     let current_pension_insurance = parseNumber(document.getElementById('pension_insurance').value) || 0;
     let current_nsf = parseNumber(document.getElementById('nsf').value) || 0;
 
-    // Total retirement contributions
     let total_retirement_contributions = current_ssf + current_rmf + current_pvd + current_gpf + current_pension_insurance + current_nsf;
 
-    // Remaining retirement allowance
     remaining_retirement_allowance = retirement_total_limit - total_retirement_contributions;
     remaining_retirement_allowance = Math.max(0, remaining_retirement_allowance);
 
-    // Remaining individual limits for SSF and RMF
     let remaining_ssf_limit = ssf_limit - current_ssf;
     remaining_ssf_limit = Math.max(0, remaining_ssf_limit);
 
     let remaining_rmf_limit = rmf_limit - current_rmf;
     remaining_rmf_limit = Math.max(0, remaining_rmf_limit);
 
-    // Recommended SSF and RMF investments
     let recommended_ssf = Math.min(remaining_ssf_limit, remaining_retirement_allowance);
     let recommended_rmf = Math.min(remaining_rmf_limit, remaining_retirement_allowance);
 
-    // Calculate recommended_thaiesg
     let current_thaiesg = parseNumber(document.getElementById('thaiesg').value) || 0;
-    let thaiesg_limit = Math.min(total_income * 0.30, 300000);
-    let recommended_thaiesg = Math.max(0, Math.min(thaiesg_limit - current_thaiesg, total_income * 0.30 - current_thaiesg));
+    let thaiesg_limit_final = Math.min(total_income * 0.30, 300000);
+    let recommended_thaiesg = Math.max(0, Math.min(thaiesg_limit_final - current_thaiesg, total_income * 0.30 - current_thaiesg));
 
-    // Display results
     document.getElementById('result_total_income').innerText = formatNumber(total_income);
     document.getElementById('result_expense').innerText = formatNumber(expense);
     document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
     document.getElementById('result_net_income').innerText = formatNumber(net_income);
     document.getElementById('result_effective_tax_rate').innerText = effective_tax_rate.toFixed(2) + '%';
 
-    // Display the withholding tax only if it is greater than 0
+    total_withholding_tax = calculateTotalWithholdingTax();
     let withholdingTaxParent = document.getElementById('result_withholding_tax').parentElement;
     if (total_withholding_tax > 0) {
         document.getElementById('result_withholding_tax').innerText = formatNumber(total_withholding_tax);
@@ -833,10 +780,7 @@ function calculateTax() {
         withholdingTaxParent.style.display = 'none';
     }
 
-    // Calculate X = Tax due - Withholding Tax
     let X = tax - total_withholding_tax;
-
-    // Display summary based on X
     const taxSummaryDiv = document.getElementById('tax_summary');
     const taxDueReal = document.getElementById('tax_due_real');
     const taxCreditRefund = document.getElementById('tax_credit_refund');
@@ -859,22 +803,16 @@ function calculateTax() {
         taxSummaryDiv.style.display = 'none';
     }
 
-    // Update recommended investments display
     updateInvestmentDisplay('max_ssf', recommended_ssf);
     updateInvestmentDisplay('max_rmf', recommended_rmf);
     updateInvestmentDisplay('max_thaiesg', recommended_thaiesg);
 
-    // Set isTaxCalculated to true
     isTaxCalculated = true;
-
-    // Update stepper to step 4
     setActiveStep(4);
-
-    // Show result section
     showStep(4);
 }
 
-// Function to update retirement deductions in real-time
+// Update retirement deductions
 function updateRetirementDeductions() {
     let ssf = parseNumber(document.getElementById('ssf').value) || 0;
     let rmf = parseNumber(document.getElementById('rmf').value) || 0;
@@ -898,22 +836,19 @@ function updateRetirementDeductions() {
     let remaining_rmf_limit = rmf_limit - rmf;
     remaining_rmf_limit = Math.max(0, remaining_rmf_limit);
 
-    // Recommended SSF and RMF investments
     let recommended_ssf = Math.min(remaining_ssf_limit, remaining_retirement_allowance);
     let recommended_rmf = Math.min(remaining_rmf_limit, remaining_retirement_allowance);
 
-    // Calculate recommended_thaiesg
     let thaiesg = parseNumber(document.getElementById('thaiesg').value) || 0;
     let thaiesg_limit = Math.min(total_income * 0.30, 300000);
     let recommended_thaiesg = Math.max(0, Math.min(thaiesg_limit - thaiesg, total_income * 0.30 - thaiesg));
 
-    // Update the display with conditional formatting
     updateInvestmentDisplay('max_ssf', recommended_ssf);
     updateInvestmentDisplay('max_rmf', recommended_rmf);
     updateInvestmentDisplay('max_thaiesg', recommended_thaiesg);
 }
 
-// Function to show error modal
+// Show error modal
 function showErrorModal(messages, fields) {
     const errorModal = document.getElementById('errorModal');
     const errorList = document.getElementById('errorList');
@@ -924,17 +859,14 @@ function showErrorModal(messages, fields) {
         errorList.appendChild(li);
     });
     errorModal.style.display = 'block';
-
-    // Store error fields
     errorModal.errorFields = fields;
 }
 
-// Function to close error modal
+// Close error modal
 function closeErrorModal() {
     const errorModal = document.getElementById('errorModal');
     errorModal.style.display = 'none';
 
-    // Scroll to the first error field
     if (errorModal.errorFields && errorModal.errorFields.length > 0) {
         const firstErrorField = document.getElementById(errorModal.errorFields[0]);
         if (firstErrorField) {
@@ -944,24 +876,20 @@ function closeErrorModal() {
     }
 }
 
-// Function to edit data
+// Edit data
 function editData() {
-    // Return to step 3 to edit data
     navigateToStep(3);
 }
 
-// Function to reset data
+// Reset data
 function resetData() {
-    // Reset variables
     total_income = 0;
     monthly_income = 0;
     expense = 0;
     isTaxCalculated = false;
     total_withholding_tax = 0;
 
-    // Reset all input fields
     document.querySelectorAll('input[type="text"]').forEach(function(input) {
-        // Reset to default values or empty strings as appropriate
         if (input.id === 'bonus_income' || input.id === 'other_income' || input.id === 'withholding_tax_annual_input' || input.id === 'withholding_tax_monthly_input') {
             input.value = '0';
         } else {
@@ -969,17 +897,14 @@ function resetData() {
         }
     });
 
-    // Uncheck all checkboxes
     document.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
         checkbox.checked = false;
     });
 
-    // Reset all select elements to their default values
     document.querySelectorAll('select').forEach(function(select) {
         select.selectedIndex = 0;
     });
 
-    // Hide additional sections
     document.getElementById('annual_income_section').style.display = 'none';
     document.getElementById('withholding_tax_annual_checkbox_section').style.display = 'none';
     document.getElementById('withholding_tax_annual_section').style.display = 'none';
@@ -992,47 +917,32 @@ function resetData() {
     document.getElementById('stimulus_section').style.display = 'none';
     document.getElementById('social_security_section').style.display = 'none';
 
-    // Clear displayed values
     document.getElementById('expense_display').innerText = '0';
     document.getElementById('result_withholding_tax').innerText = '0';
     document.getElementById('tax_summary').style.display = 'none';
 
-    // Clear errors
     document.querySelectorAll('.error').forEach(function(el) {
         el.innerText = '';
     });
 
-    // Reset stepper
     setActiveStep(1);
-
-    // Show Step 1 and hide other steps
     showStep(1);
 
-    // Hide result section
     document.getElementById('step-4').style.display = 'none';
-
-    // Hide Landing Page
     document.getElementById('landing-page').style.display = 'none';
-
-    // Show main container if it's not visible
     document.getElementById('main-container').style.display = 'block';
 
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Function to go to investment section
+// Go to investment section
 function goToInvestmentSection() {
-    // Navigate to step 3 and scroll to the investment section
     navigateToStep(3);
-
-    // Ensure the insurance section is displayed
     if (!document.getElementById('has_insurance').checked) {
         document.getElementById('has_insurance').checked = true;
         document.getElementById('insurance_section').style.display = 'block';
     }
 
-    // Scroll to the SSF field
     const ssfField = document.getElementById('ssf');
     if (ssfField) {
         ssfField.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1040,7 +950,7 @@ function goToInvestmentSection() {
     }
 }
 
-// Function to update investment display
+// Update investment display
 function updateInvestmentDisplay(elementId, amount) {
     const element = document.getElementById(elementId);
     if (elementId === 'max_ssf' || elementId === 'max_rmf') {
@@ -1062,7 +972,7 @@ function updateInvestmentDisplay(elementId, amount) {
     }
 }
 
-// Function to set active step in stepper
+// Set active step in stepper
 function setActiveStep(stepNumber) {
     const stepper = document.getElementById('stepper');
     stepper.setAttribute('data-current-step', stepNumber);
@@ -1083,31 +993,26 @@ function setActiveStep(stepNumber) {
     });
 }
 
-// Function to navigate to a specific step
+// Navigate to a specific step
 function navigateToStep(stepNumber) {
-    // Hide all step contents
     document.querySelectorAll('.container .step-content').forEach(function (step) {
         step.classList.remove('active');
         step.style.display = 'none';
     });
 
-    // Show the selected step content
     document.getElementById(`step-${stepNumber}`).style.display = 'block';
     document.getElementById(`step-${stepNumber}`).classList.add('active');
 
-    // Update stepper active state
     setActiveStep(stepNumber);
-
-    // Scroll to top smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Function to show a specific step
+// Show a specific step
 function showStep(stepNumber) {
     navigateToStep(stepNumber);
 }
 
-// Function to populate children options
+// Populate children options
 function populateChildrenOptions() {
     const childrenOwnSelect = document.getElementById('children_own');
     const childrenAdoptedSelect = document.getElementById('children_adopted');
@@ -1144,3 +1049,93 @@ function populateChildrenOptions() {
         }
     }
 }
+
+// Print result (with inline CSS for reliability)
+function printResult() {
+    const printableArea = document.getElementById('printable-area');
+    const inlineStyles = `
+        body {
+            font-family: 'Kanit', sans-serif;
+            color: #333;
+            font-size: 18px;
+            padding: 20px;
+        }
+        #printable-area {
+            padding-left: 20px; 
+            padding-right: 20px; 
+        }
+        h2 {
+            color: #28a745;
+            font-size: 2rem;
+            margin-top: 0;
+        }
+        p {
+            font-size: 1.3rem;
+            margin: 10px 0;
+        }
+        .effective-tax-rate {
+            font-weight: bold;
+        }
+        .tax-due-real {
+            color: red;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+        .tax-credit-refund {
+            color: green;
+            font-weight: bold;
+            font-size: 1.5em;
+        }
+        #recommended-investments {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+        }
+        #recommended-investments h3 {
+            color: #007bff;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        #recommended-investments p {
+            font-size: 1.2rem;
+            color: #333333;
+        }
+    `;
+
+    const printWindow = window.open('', '', 'height=600,width=800');
+    printWindow.document.write('<html><head><title>พิมพ์ผลลัพธ์</title>');
+    printWindow.document.write('<style>' + inlineStyles + '</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(printableArea.innerHTML);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+
+    printWindow.onload = function() {
+        printWindow.print();
+        printWindow.close();
+    };
+}
+
+// Save result as image
+function saveAsImage() {
+    const printableArea = document.getElementById('printable-area');
+
+    html2canvas(printableArea).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = imgData;
+        link.download = 'tax_calculation_result.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }).catch(error => {
+        console.error('Error saving image:', error);
+        alert('ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง');
+    });
+}
+
+// Make functions available globally if needed
+window.printResult = printResult;
+window.saveAsImage = saveAsImage;
