@@ -1124,12 +1124,13 @@ function saveAsImage() {
 
     html2canvas(printableArea).then(canvas => {
         const imgData = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.href = imgData;
-        link.download = 'tax_calculation_result.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // Open a new tab with the image
+        const newWindow = window.open('', '_blank');
+        newWindow.document.write('<html><head><title>ผลลัพธ์การคำนวณภาษี</title></head><body style="margin:0; padding:0; text-align:center;">');
+        newWindow.document.write('<img src="' + imgData + '" style="max-width:100%; height:auto; display:block; margin:0 auto;" />');
+        newWindow.document.write('</body></html>');
+        newWindow.document.close();
+        // No download triggered here. The user can now press and hold the image on iOS to save it.
     }).catch(error => {
         console.error('Error saving image:', error);
         alert('ไม่สามารถบันทึกรูปภาพได้ กรุณาลองใหม่อีกครั้ง');
