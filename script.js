@@ -143,7 +143,6 @@ function nextStep(currentStep) {
 
             // Update stepper to step 2
             setActiveStep(2);
-
             // Go to step 2
             showStep(2);
         } else if (currentStep === 2) {
@@ -480,6 +479,7 @@ function validateStep(stepNumber) {
 
 // Calculate tax
 function calculateTax() {
+    // Clear previous error messages
     document.querySelectorAll('.error').forEach(function (el) {
         el.innerText = '';
     });
@@ -712,6 +712,9 @@ function calculateTax() {
     let net_income = total_income - total_deductions;
     if (net_income < 0) net_income = 0;
 
+    // -------------------------
+    //  TAX Calculation
+    // -------------------------
     let tax = 0;
     if (net_income <= 150000) {
         tax = 0;
@@ -736,41 +739,72 @@ function calculateTax() {
         effective_tax_rate = (tax / total_income) * 100;
     }
 
+    // -------------------------
+    //  Recommended Investments
+    // -------------------------
+    // 1) Calculate how much net_income is above 150,000 (the taxed portion).
+    let excess_over_150k = net_income > 150000 ? net_income - 150000 : 0;
+
+    // 2) Legal SSF/RMF/ThaiESG limits
     let ssf_limit = Math.min(total_income * 0.30, 200000); 
     let rmf_limit = Math.min(total_income * 0.30, 500000); 
-    let retirement_total_limit = 500000; 
+    let thaiesg_limit_final = Math.min(total_income * 0.30, 300000);
 
+    // 3) Current user data
     let current_ssf = parseNumber(document.getElementById('ssf').value) || 0;
     let current_rmf = parseNumber(document.getElementById('rmf').value) || 0;
     let current_pvd = parseNumber(document.getElementById('pvd').value) || 0;
     let current_gpf = parseNumber(document.getElementById('gpf').value) || 0;
     let current_pension_insurance = parseNumber(document.getElementById('pension_insurance').value) || 0;
     let current_nsf = parseNumber(document.getElementById('nsf').value) || 0;
+    let current_thaiesg = parseNumber(document.getElementById('thaiesg').value) || 0;
 
+    // 4) Total retirement contributions so far
     let total_retirement_contributions = current_ssf + current_rmf + current_pvd + current_gpf + current_pension_insurance + current_nsf;
-
+    let retirement_total_limit = 500000; 
     remaining_retirement_allowance = retirement_total_limit - total_retirement_contributions;
     remaining_retirement_allowance = Math.max(0, remaining_retirement_allowance);
 
+    // 5) "Raw recommended" amounts (based on legal limits)
     let remaining_ssf_limit = ssf_limit - current_ssf;
     remaining_ssf_limit = Math.max(0, remaining_ssf_limit);
 
     let remaining_rmf_limit = rmf_limit - current_rmf;
     remaining_rmf_limit = Math.max(0, remaining_rmf_limit);
 
-    let recommended_ssf = Math.min(remaining_ssf_limit, remaining_retirement_allowance);
-    let recommended_rmf = Math.min(remaining_rmf_limit, remaining_retirement_allowance);
+    let recommended_ssf_raw = Math.min(remaining_ssf_limit, remaining_retirement_allowance);
+    let recommended_rmf_raw = Math.min(remaining_rmf_limit, remaining_retirement_allowance);
 
-    let current_thaiesg = parseNumber(document.getElementById('thaiesg').value) || 0;
-    let thaiesg_limit_final = Math.min(total_income * 0.30, 300000);
-    let recommended_thaiesg = Math.max(0, Math.min(thaiesg_limit_final - current_thaiesg, total_income * 0.30 - current_thaiesg));
+    let recommended_thaiesg_raw = Math.max(
+        0,
+        Math.min(
+            thaiesg_limit_final - current_thaiesg,
+            (total_income * 0.30) - current_thaiesg
+        )
+    );
 
+    // 6) Actual "useful" recommended amounts: can't exceed the taxed portion
+    let recommended_ssf = Math.min(recommended_ssf_raw, excess_over_150k);
+    let recommended_rmf = Math.min(recommended_rmf_raw, excess_over_150k);
+    let recommended_thaiesg = Math.min(recommended_thaiesg_raw, excess_over_150k);
+
+    // 7) If net_income <= 150,000 => no tax => recommended = 0
+    if (net_income <= 150000) {
+        recommended_ssf = 0;
+        recommended_rmf = 0;
+        recommended_thaiesg = 0;
+    }
+
+    // -------------------------
+    //  Display final results
+    // -------------------------
     document.getElementById('result_total_income').innerText = formatNumber(total_income);
     document.getElementById('result_expense').innerText = formatNumber(expense);
     document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
     document.getElementById('result_net_income').innerText = formatNumber(net_income);
     document.getElementById('result_effective_tax_rate').innerText = effective_tax_rate.toFixed(2) + '%';
 
+    // Update withholding tax
     total_withholding_tax = calculateTotalWithholdingTax();
     let withholdingTaxParent = document.getElementById('result_withholding_tax').parentElement;
     if (total_withholding_tax > 0) {
@@ -780,6 +814,7 @@ function calculateTax() {
         withholdingTaxParent.style.display = 'none';
     }
 
+    // Tax difference (X = tax - withholding)
     let X = tax - total_withholding_tax;
     const taxSummaryDiv = document.getElementById('tax_summary');
     const taxDueReal = document.getElementById('tax_due_real');
@@ -803,6 +838,7 @@ function calculateTax() {
         taxSummaryDiv.style.display = 'none';
     }
 
+    // Display recommended investments
     updateInvestmentDisplay('max_ssf', recommended_ssf);
     updateInvestmentDisplay('max_rmf', recommended_rmf);
     updateInvestmentDisplay('max_thaiesg', recommended_thaiesg);
@@ -812,7 +848,7 @@ function calculateTax() {
     showStep(4);
 }
 
-// Update retirement deductions
+// Update retirement deductions (real-time)
 function updateRetirementDeductions() {
     let ssf = parseNumber(document.getElementById('ssf').value) || 0;
     let rmf = parseNumber(document.getElementById('rmf').value) || 0;
@@ -836,16 +872,22 @@ function updateRetirementDeductions() {
     let remaining_rmf_limit = rmf_limit - rmf;
     remaining_rmf_limit = Math.max(0, remaining_rmf_limit);
 
-    let recommended_ssf = Math.min(remaining_ssf_limit, remaining_retirement_allowance);
-    let recommended_rmf = Math.min(remaining_rmf_limit, remaining_retirement_allowance);
+    let recommended_ssf_raw = Math.min(remaining_ssf_limit, remaining_retirement_allowance);
+    let recommended_rmf_raw = Math.min(remaining_rmf_limit, remaining_retirement_allowance);
 
+    // For ThaiESG
     let thaiesg = parseNumber(document.getElementById('thaiesg').value) || 0;
     let thaiesg_limit = Math.min(total_income * 0.30, 300000);
-    let recommended_thaiesg = Math.max(0, Math.min(thaiesg_limit - thaiesg, total_income * 0.30 - thaiesg));
+    let recommended_thaiesg_raw = Math.max(0, Math.min(thaiesg_limit - thaiesg, total_income * 0.30 - thaiesg));
 
-    updateInvestmentDisplay('max_ssf', recommended_ssf);
-    updateInvestmentDisplay('max_rmf', recommended_rmf);
-    updateInvestmentDisplay('max_thaiesg', recommended_thaiesg);
+    // Net Income might not be updated in real-time, so for consistent approach:
+    // We can do the capping approach after the user clicks "calculateTax," 
+    // or you could do a partial approach here. 
+    // We'll keep it simple and just show raw here, final will be re-capped on "calculateTax."
+
+    updateInvestmentDisplay('max_ssf', recommended_ssf_raw);
+    updateInvestmentDisplay('max_rmf', recommended_rmf_raw);
+    updateInvestmentDisplay('max_thaiesg', recommended_thaiesg_raw);
 }
 
 // Show error modal
@@ -1118,7 +1160,7 @@ function printResult() {
     };
 }
 
-// Save result as image
+// Save result as image (dynamic desktop vs mobile approach)
 function saveAsImage() {
     const printableArea = document.getElementById('printable-area');
 
@@ -1130,7 +1172,7 @@ function saveAsImage() {
         const isMobile = userAgent.includes('iphone') || userAgent.includes('ipad') || userAgent.includes('ipod') || userAgent.includes('android');
 
         if (isMobile) {
-            // On mobile (iOS/Android): Open image in new tab
+            // On mobile (iOS/Android): Open image in new tab for long-press saving
             const newWindow = window.open('', '_blank');
             if (!newWindow) {
                 alert('โปรดอนุญาตให้เปิดหน้าต่างใหม่เพื่อดูรูปภาพ');
