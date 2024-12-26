@@ -569,12 +569,20 @@ function calculateTax() {
         }
         parent_health_insurance = Math.min(parent_health_insurance, 15000);
 
+        // Calculate the limit = min(15% of total_income, 200000)
+        let pensionInsuranceLimit = Math.min(total_income * 0.15, 200000);
         let pension_insurance = parseNumber(document.getElementById('pension_insurance').value);
-        if (pension_insurance > 200000) {
-            errorMessages.push('เบี้ยประกันชีวิตแบบบำนาญไม่ควรเกิน 200,000 บาท');
+
+        // Validate against the new limit
+        if (pension_insurance > pensionInsuranceLimit) {
+            errorMessages.push(
+                `เบี้ยประกันชีวิตแบบบำนาญไม่ควรเกิน 15% ของรายได้หรือ 200,000 บาท (จำกัดอยู่ที่ ${formatNumber(pensionInsuranceLimit)} บาท)`
+            );
             errorFields.push('pension_insurance');
         }
-        pension_insurance = Math.min(pension_insurance, 200000);
+
+        // Force pension_insurance to the allowable maximum
+        pension_insurance = Math.min(pension_insurance, pensionInsuranceLimit);
 
         let pvd = parseNumber(document.getElementById('pvd').value);
         let pvd_limit = Math.min(total_income * 0.15, 500000);
