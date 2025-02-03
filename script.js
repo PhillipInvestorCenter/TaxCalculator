@@ -12,11 +12,12 @@ let isTaxCalculated = false;
 // Checkboxes for income type
 let incomeTypeCheckboxes = null;
 
-// Retirement fields (removed 'ssf')
-const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'nsf'];
+// Retirement fields => limit sum to 500,000
+const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'ssf', 'nsf'];
 const MAX_TOTAL_RETIREMENT = 500000;
 
-// Other deduction fields for real-time clamp (note: 'ssf' removed)
+// We’ll also define “other deduction” fields for real-time clamp
+// so you can add logic for each field’s sub-limit (like ThaiESG).
 const otherDeductionFields = [
   'life_insurance',
   'health_insurance',
@@ -41,9 +42,10 @@ window.onload = function () {
   const numberFields = [
     'annual_income', 'monthly_income', 'bonus_income', 'other_income',
     'life_insurance', 'health_insurance', 'parent_health_insurance',
-    'pension_insurance', 'rmf', 'pvd', 'gpf', 'nsf',
-    'social_enterprise', 'donation', 'donation_education', 'donation_political',
-    'easy_ereceipt', 'local_travel', 'new_home', 'withholding_tax_annual_input',
+    'pension_insurance', 'ssf', 'rmf', 'pvd', 'gpf', 'thaiesg',
+    'social_enterprise', 'nsf', 'home_loan_interest', 'donation',
+    'donation_education', 'donation_political', 'easy_ereceipt',
+    'local_travel', 'new_home', 'withholding_tax_annual_input',
     'withholding_tax_monthly_input'
   ];
   numberFields.forEach((id) => {
@@ -459,6 +461,8 @@ function getRetirementFieldLimit(fieldId, totalIncome) {
       return Math.min(totalIncome * 0.30, 500000);
     case 'rmf':
       return Math.min(totalIncome * 0.30, 500000);
+    case 'ssf':
+      return Math.min(totalIncome * 0.30, 200000);
     case 'nsf':
       return 30000;
     default:
@@ -533,7 +537,7 @@ function getOtherDeductionLimit(fieldId) {
     case 'local_travel':        return 15000;
     case 'home_loan_interest':  return 100000;
     case 'new_home':            // The actual deduction is computed differently, but we can clamp
-      return Number.MAX_VALUE;
+      return Number.MAX_VALUE;  // or if you want to clamp it, set a limit
     default:
       return Number.MAX_VALUE;
   }
@@ -669,6 +673,14 @@ function calculateTax() {
     }
     gpfVal = Math.min(gpfVal, gpfLimit);
 
+    let ssfVal = parseNumber(document.getElementById('ssf').value);
+    let ssfLimit = Math.min(total_income * 0.30, 200000);
+    if (ssfVal > ssfLimit) {
+      errorMessages.push('SSF เกิน limit');
+      errorFields.push('ssf');
+    }
+    ssfVal = Math.min(ssfVal, ssfLimit);
+
     let rmfVal = parseNumber(document.getElementById('rmf').value);
     let rmfLimit = Math.min(total_income * 0.30, 500000);
     if (rmfVal > rmfLimit) {
@@ -699,7 +711,7 @@ function calculateTax() {
     }
     nsfVal = Math.min(nsfVal, 30000);
 
-    retirement_total = pensionVal + pvdVal + gpfVal + rmfVal + nsfVal;
+    retirement_total = pensionVal + pvdVal + gpfVal + rmfVal + ssfVal + nsfVal;
     if (retirement_total > MAX_TOTAL_RETIREMENT) {
       errorMessages.push('รวมค่าลดหย่อนกลุ่มเกษียณไม่เกิน 500,000 บาท');
       errorFields.push('rmf');
@@ -806,11 +818,13 @@ function calculateTax() {
     effective_tax_rate = (tax / total_income) * 100;
   }
 
-  // Recommended RMF / ThaiESG (excluding SSF)
+  // Recommended SSF / RMF / ThaiESG
   let excess_over_150k = net_income > 150000 ? net_income - 150000 : 0;
+  let ssf_limit = Math.min(total_income * 0.30, 200000);
   let rmf_limit = Math.min(total_income * 0.30, 500000);
   let thaiesg_limit_final = Math.min(total_income * 0.30, 300000);
 
+  let current_ssf = parseNumber(document.getElementById('ssf').value) || 0;
   let current_rmf = parseNumber(document.getElementById('rmf').value) || 0;
   let current_pvd = parseNumber(document.getElementById('pvd').value) || 0;
   let current_gpf = parseNumber(document.getElementById('gpf').value) || 0;
@@ -818,21 +832,26 @@ function calculateTax() {
   let current_nsf = parseNumber(document.getElementById('nsf').value) || 0;
   let current_thaiesg = parseNumber(document.getElementById('thaiesg').value) || 0;
 
-  let total_retirement_contrib = current_rmf + current_pvd + current_gpf + current_pension + current_nsf;
+  let total_retirement_contrib = current_ssf + current_rmf + current_pvd + current_gpf + current_pension + current_nsf;
   let leftover_ret_allowance = MAX_TOTAL_RETIREMENT - total_retirement_contrib;
   leftover_ret_allowance = Math.max(0, leftover_ret_allowance);
 
+  let remaining_ssf_limit = Math.max(0, ssf_limit - current_ssf);
   let remaining_rmf_limit = Math.max(0, rmf_limit - current_rmf);
 
+  let recommended_ssf_raw = Math.min(remaining_ssf_limit, leftover_ret_allowance);
   let recommended_rmf_raw = Math.min(remaining_rmf_limit, leftover_ret_allowance);
-  let recommended_rmf = Math.min(recommended_rmf_raw, excess_over_150k);
   let recommended_thaiesg_raw = Math.max(
     0,
     Math.min(thaiesg_limit_final - current_thaiesg, (total_income * 0.30) - current_thaiesg)
   );
+
+  let recommended_ssf = Math.min(recommended_ssf_raw, excess_over_150k);
+  let recommended_rmf = Math.min(recommended_rmf_raw, excess_over_150k);
   let recommended_thaiesg = Math.min(recommended_thaiesg_raw, excess_over_150k);
 
   if (net_income <= 150000) {
+    recommended_ssf = 0;
     recommended_rmf = 0;
     recommended_thaiesg = 0;
   }
@@ -875,7 +894,8 @@ function calculateTax() {
     taxSummaryDiv.style.display = 'none';
   }
 
-  // Show recommended (excluding SSF)
+  // Show recommended
+  updateInvestmentDisplay('max_ssf', recommended_ssf);
   updateInvestmentDisplay('max_rmf', recommended_rmf);
   updateInvestmentDisplay('max_thaiesg', recommended_thaiesg);
 
@@ -987,10 +1007,10 @@ function goToInvestmentSection() {
     document.getElementById('has_insurance').checked = true;
     document.getElementById('insurance_section').style.display = 'block';
   }
-  const rmfField = document.getElementById('rmf');
-  if (rmfField) {
-    rmfField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    rmfField.focus();
+  const ssfField = document.getElementById('ssf');
+  if (ssfField) {
+    ssfField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    ssfField.focus();
   }
 }
 
@@ -1111,6 +1131,7 @@ function updateDeductionLimits() {
   const pensionInsuranceLimit = Math.min(income * 0.15, 200000);
   const pvdLimit = Math.min(income * 0.15, 500000);
   const gpfLimit = Math.min(income * 0.30, 500000);
+  const ssfLimit = Math.min(income * 0.30, 200000);
   const rmfLimit = Math.min(income * 0.30, 500000);
   const thaiesgLimit = Math.min(income * 0.30, 300000);
   const socialEnterpriseLimit = 100000;
@@ -1125,6 +1146,7 @@ function updateDeductionLimits() {
   setLimitLabel('pension_insurance', 'pension_insurance_limit_label', pensionInsuranceLimit);
   setLimitLabel('pvd', 'pvd_limit_label', pvdLimit);
   setLimitLabel('gpf', 'gpf_limit_label', gpfLimit);
+  setLimitLabel('ssf', 'ssf_limit_label', ssfLimit);
   setLimitLabel('rmf', 'rmf_limit_label', rmfLimit);
   setLimitLabel('nsf', 'nsf_limit_label', nsfLimit);
 
