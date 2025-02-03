@@ -283,6 +283,12 @@
         </label>
         <input type="text" id="gpf" value="0" inputmode="decimal">
 
+        <label>กองทุนรวมเพื่อการออม (SSF) (บาท):
+          <span class="limit-label" id="ssf_limit_label"></span>
+          <span class="error" id="ssf_error"></span>
+        </label>
+        <input type="text" id="ssf" value="0" inputmode="decimal">
+
         <label>กองทุนรวมเพื่อการเลี้ยงชีพ (RMF) (บาท):
           <span class="limit-label" id="rmf_limit_label"></span>
           <span class="error" id="rmf_error"></span>
@@ -301,7 +307,7 @@
         </label>
         <input type="text" id="social_enterprise" value="0" inputmode="decimal">
 
-        <label>กองทุนการออมแห่งชาติ (กอช.) (บาท):
+        <label>เงินสมทบกองทุนการออมแห่งชาติ (กอช.) (บาท):
           <span class="limit-label" id="nsf_limit_label"></span>
           <span class="error" id="nsf_error"></span>
         </label>
@@ -401,9 +407,10 @@
           <p id="tax_credit_refund" class="tax-credit-refund"></p>
         </div>
 
-        <!-- Recommended Investments (excluding SSF) -->
+        <!-- Recommended Investments -->
         <div id="recommended-investments">
           <h3>คำแนะนำการซื้อเพื่อสิทธิ์ลดหย่อนเพิ่มเติม</h3>
+          <p><strong>SSF ที่ซื้อได้สูงสุด:</strong> <span id="max_ssf">ไม่สามารถซื้อเพิ่มได้</span></p>
           <p><strong>RMF ที่ซื้อได้สูงสุด:</strong> <span id="max_rmf">ไม่สามารถซื้อเพิ่มได้</span></p>
           <p><strong>Thai ESG ที่ซื้อได้สูงสุด:</strong> <span id="max_thaiesg">ไม่สามารถซื้อเพิ่มได้</span></p>
         </div>
