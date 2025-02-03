@@ -1,557 +1,556 @@
 /* Base and Global */
 body {
-    font-family: 'Kanit', sans-serif;
-    background-color: #f0f2f5;
-    margin: 0;
-    padding: 0;
-    font-size: 18px;
-    color: #333;
-  }
-  
-  /* Landing Page */
-  .landing-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
-    text-align: center;
-    padding: 20px;
-    box-sizing: border-box;
-  }
-  
-  .landing-page h1 {
-    font-size: 2.5rem;
-    margin-bottom: 20px;
-  }
-  
-  .landing-page p {
-    font-size: 1.3rem;
-    margin-bottom: 40px;
-    max-width: 600px;
-    color: #333333;
-  }
-  
-  .landing-page button {
-    padding: 18px 40px;
-    font-size: 1.6rem;
-    background-color: #ffffff;
-    color: #4a90e2;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s;
-    font-family: 'Kanit', sans-serif;
-  }
-  
-  .landing-page button:hover {
-    background-color: #e0e0e0;
-    transform: scale(1.05);
-  }
-  
-  /* Container */
+  font-family: 'Kanit', sans-serif;
+  background-color: #f0f2f5;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+/* Landing Page */
+.landing-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.landing-page h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.landing-page p {
+  font-size: 1.3rem;
+  margin-bottom: 40px;
+  max-width: 600px;
+  color: #333333;
+}
+
+.landing-page button {
+  padding: 18px 40px;
+  font-size: 1.6rem;
+  background-color: #ffffff;
+  color: #4a90e2;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+  font-family: 'Kanit', sans-serif;
+}
+
+.landing-page button:hover {
+  background-color: #e0e0e0;
+  transform: scale(1.05);
+}
+
+/* Container */
+.container {
+  max-width: 850px;
+  margin: 30px auto;
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  display: none; /* Hidden until user clicks start */
+  position: relative;
+}
+
+.container h1 {
+  text-align: center;
+  font-size: 2.2rem;
+  margin-bottom: 30px;
+  color: #333333;
+}
+
+/* Labels and Inputs */
+label {
+  display: block;
+  margin-top: 20px;
+  font-weight: 600;
+  color: #555555;
+  font-size: 1.1rem;
+}
+
+input[type="text"], select {
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1.1rem;
+}
+
+.info {
+  font-size: 0.95rem;
+  color: #777777;
+  margin-top: 4px;
+}
+
+/* Buttons */
+button {
+  margin-top: 30px;
+  padding: 18px;
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+  font-family: 'Kanit', sans-serif;
+}
+
+button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+/* Checkboxes */
+input[type="checkbox"] {
+  margin-right: 10px;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 1.1rem;
+}
+
+/* Step Content */
+.step-content {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.step-content.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Navigation Buttons (Prev/Next) */
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.navigation-buttons button {
+  width: 45%;
+  font-family: 'Kanit', sans-serif;
+  margin: 5px;
+}
+
+/* Error Messages */
+.error {
+  color: red;
+  font-size: 0.9rem;
+  margin-left: 10px;
+}
+
+/* Stepper */
+.stepper {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  position: relative;
+  align-items: center;
+}
+
+/* Stepper's background line */
+.stepper::before {
+  content: '';
+  position: absolute;
+  top: 26%;
+  left: 5%;
+  right: 5%;
+  height: 4px;
+  background-color: #e0e0e0;
+  z-index: 1;
+}
+
+/* Stepper's progress line */
+.stepper::after {
+  content: '';
+  position: absolute;
+  top: 26%;
+  left: 0%;
+  height: 4px;
+  background-color: #007bff;
+  z-index: 2;
+  transition: width 0.3s;
+  width: 0%;
+}
+
+/* Each step in the stepper */
+.stepper-step {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stepper-step-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: #555555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s, color 0.3s, transform 0.3s;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.stepper-step-label {
+  font-size: 0.9rem;
+  color: #555555;
+  margin-top: 8px;
+}
+
+.stepper-step.completed .stepper-step-circle {
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+.stepper-step.active .stepper-step-circle {
+  transform: scale(1.2);
+}
+
+/* Stepper progress line widths by current step */
+.stepper[data-current-step="1"]::after {
+  width: calc(0% - 10px);
+}
+
+.stepper[data-current-step="2"]::after {
+  width: calc(33.33% - 10px);
+}
+
+.stepper[data-current-step="3"]::after {
+  width: calc(63% - 10px);
+}
+
+.stepper[data-current-step="4"]::after {
+  width: calc(95% - 10px);
+}
+
+/* Deduction Sections (colored backgrounds) */
+.deduction-section {
+  margin-top: 30px;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.section-personal {
+  background-color: #fef9e7; /* light yellowish */
+}
+
+.section-insurance {
+  background-color: #e8f8f5; /* light teal */
+}
+
+.section-donation {
+  background-color: #f9ebea; /* light red/pink */
+}
+
+.section-stimulus {
+  background-color: #e8daef; /* light purple */
+}
+
+/* Expense Display (Step 2) */
+.expense-value {
+  color: #28a745; /* Green color */
+  font-size: 2em;
+  font-weight: bold;
+}
+
+/* Result Section (Step 4) */
+.step-content#step-4 h2 {
+  color: #28a745;
+  font-size: 2rem;
+  margin-top: 0;
+}
+
+.step-content#step-4 p {
+  font-size: 1.3rem;
+  color: #333333;
+}
+
+/* Effective Tax Rate */
+.step-content#step-4 .effective-tax-rate {
+  font-size: 1.3em;
+  color: #28a745;
+  font-weight: bold;
+}
+
+/* Summary Fields */
+.tax-due-real {
+  color: red;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+.tax-credit-refund {
+  color: green;
+  font-weight: bold;
+  font-size: 1.5em;
+}
+
+#tax_summary {
+  margin-top: 20px;
+}
+
+/* Buttons for printing or saving */
+.additional-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.print-button, .save-image-button {
+  flex: 1 1 45%;
+  padding: 12px;
+  margin: 5px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+  font-family: 'Kanit', sans-serif;
+}
+
+.print-button {
+  background-color: #6c757d; /* Gray */
+  color: #ffffff;
+}
+
+.print-button:hover {
+  background-color: #5a6268;
+  transform: scale(1.05);
+}
+
+.save-image-button {
+  background-color: #28a745; /* Green */
+  color: #ffffff;
+}
+
+.save-image-button:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+}
+
+/* Feedback Button */
+.feedback-button {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #17a2b8; 
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+  font-family: 'Kanit', sans-serif;
+  width: 100%;
+}
+
+.feedback-button:hover {
+  background-color: #138496;
+  transform: scale(1.05);
+}
+
+/* For sub-sections (indented input groups) */
+.sub-section {
+  margin-left: 40px;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 30px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+}
+
+.modal-content ul {
+  text-align: left;
+  padding-left: 20px;
+}
+
+.modal-content button {
+  width: auto;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  border-radius: 50px;
+}
+
+/* Recommended Investments Box */
+#recommended-investments {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f0f8ff;
+  border-radius: 8px;
+}
+
+#recommended-investments h3 {
+  color: #007bff;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+#recommended-investments p {
+  font-size: 1.2rem;
+  color: #333333;
+}
+
+/* Withholding Tax Display */
+#result_withholding_tax {
+  color: #17a2b8; /* Teal */
+  font-size: 1.3em;
+  font-weight: bold;
+}
+
+/* Limit Labels for real-time sub-limit display */
+.input-with-limit {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.limit-label {
+  margin-left: 8px;
+  color: #888;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
   .container {
-    max-width: 850px;
-    margin: 30px auto;
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    box-sizing: border-box;
-    display: none; /* Hidden until user clicks start */
-    position: relative;
+    padding: 20px;
+    margin: 20px auto;
   }
-  
+
   .container h1 {
-    text-align: center;
-    font-size: 2.2rem;
-    margin-bottom: 30px;
-    color: #333333;
+    font-size: 2rem;
   }
-  
-  /* Labels and Inputs */
-  label {
-    display: block;
-    margin-top: 20px;
-    font-weight: 600;
-    color: #555555;
-    font-size: 1.1rem;
-  }
-  
-  input[type="text"], select {
-    width: 100%;
-    padding: 14px;
-    margin-top: 8px;
-    border: 1px solid #cccccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 1.1rem;
-  }
-  
-  .info {
-    font-size: 0.95rem;
-    color: #777777;
-    margin-top: 4px;
-  }
-  
-  /* Buttons */
+
   button {
-    margin-top: 30px;
-    padding: 18px;
-    background-color: #007bff;
-    color: #ffffff;
-    border: none;
-    border-radius: 50px;
-    font-size: 1.6rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s;
-    font-family: 'Kanit', sans-serif;
+    font-size: 1.5rem;
   }
-  
-  button:hover {
-    background-color: #0056b3;
-    transform: scale(1.05);
+
+  label {
+    font-size: 1rem;
   }
-  
-  /* Checkboxes */
-  input[type="checkbox"] {
-    margin-right: 10px;
-    transform: scale(1.2);
-    cursor: pointer;
+
+  input[type="text"], select {
+    font-size: 1rem;
   }
-  
+
   .checkbox-group {
-    display: flex;
-    align-items: center;
-    margin-top: 10px;
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
-  
-  /* Step Content */
-  .step-content {
-    display: none;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-  }
-  
-  .step-content.active {
-    display: block;
-    opacity: 1;
-  }
-  
-  /* Navigation Buttons (Prev/Next) */
-  .navigation-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 30px;
-  }
-  
-  .navigation-buttons button {
-    width: 45%;
-    font-family: 'Kanit', sans-serif;
-    margin: 5px;
-  }
-  
-  /* Error Messages */
-  .error {
-    color: red;
+
+  .info {
     font-size: 0.9rem;
-    margin-left: 10px;
   }
-  
-  /* Stepper */
-  .stepper {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
-    position: relative;
-    align-items: center;
+
+  .stepper-step-label {
+    font-size: 0.8rem;
   }
-  
-  /* Stepper's background line */
-  .stepper::before {
-    content: '';
-    position: absolute;
-    top: 26%;
+
+  .print-button, .save-image-button {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 16px;
+  }
+
+  .container {
+    padding: 15px;
+  }
+
+  .container h1 {
+    font-size: 1.8rem;
+  }
+
+  button {
+    font-size: 1.3rem;
+  }
+
+  .stepper::before,
+  .stepper::after {
     left: 5%;
     right: 5%;
-    height: 4px;
-    background-color: #e0e0e0;
-    z-index: 1;
   }
-  
-  /* Stepper's progress line */
-  .stepper::after {
-    content: '';
+}
+
+/* Print Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #step-4, #step-4 * {
+    visibility: visible;
+  }
+  #step-4 {
     position: absolute;
-    top: 26%;
-    left: 0%;
-    height: 4px;
-    background-color: #007bff;
-    z-index: 2;
-    transition: width 0.3s;
-    width: 0%;
-  }
-  
-  /* Each step in the stepper */
-  .stepper-step {
-    position: relative;
-    z-index: 3;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .stepper-step-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: #e0e0e0;
-    color: #555555;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.3s, color 0.3s, transform 0.3s;
-    box-sizing: border-box;
-    cursor: pointer;
-  }
-  
-  .stepper-step-label {
-    font-size: 0.9rem;
-    color: #555555;
-    margin-top: 8px;
-  }
-  
-  .stepper-step.completed .stepper-step-circle {
-    background-color: #007bff;
-    color: #ffffff;
-  }
-  
-  .stepper-step.active .stepper-step-circle {
-    transform: scale(1.2);
-  }
-  
-  /* Stepper progress line widths by current step */
-  .stepper[data-current-step="1"]::after {
-    width: calc(0% - 10px);
-  }
-  
-  .stepper[data-current-step="2"]::after {
-    width: calc(33.33% - 10px);
-  }
-  
-  .stepper[data-current-step="3"]::after {
-    width: calc(63% - 10px);
-  }
-  
-  .stepper[data-current-step="4"]::after {
-    width: calc(95% - 10px);
-  }
-  
-  /* Deduction Sections (colored backgrounds) */
-  .deduction-section {
-    margin-top: 30px;
-    padding: 20px;
-    border-radius: 8px;
-  }
-  
-  .section-personal {
-    background-color: #fef9e7; /* light yellowish */
-  }
-  
-  .section-insurance {
-    background-color: #e8f8f5; /* light teal */
-  }
-  
-  .section-donation {
-    background-color: #f9ebea; /* light red/pink */
-  }
-  
-  .section-stimulus {
-    background-color: #e8daef; /* light purple */
-  }
-  
-  /* Expense Display (Step 2) */
-  .expense-value {
-    color: #28a745; /* Green color */
-    font-size: 2em;
-    font-weight: bold;
-  }
-  
-  /* Result Section (Step 4) */
-  .step-content#step-4 h2 {
-    color: #28a745;
-    font-size: 2rem;
-    margin-top: 0;
-  }
-  
-  .step-content#step-4 p {
-    font-size: 1.3rem;
-    color: #333333;
-  }
-  
-  /* Effective Tax Rate */
-  .step-content#step-4 .effective-tax-rate {
-    font-size: 1.3em;
-    color: #28a745;
-    font-weight: bold;
-  }
-  
-  /* Summary Fields */
-  .tax-due-real {
-    color: red;
-    font-weight: bold;
-    font-size: 1.5em;
-  }
-  
-  .tax-credit-refund {
-    color: green;
-    font-weight: bold;
-    font-size: 1.5em;
-  }
-  
-  #tax_summary {
-    margin-top: 20px;
-  }
-  
-  /* Buttons for printing or saving */
-  .additional-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    flex-wrap: wrap;
-  }
-  
-  .print-button, .save-image-button {
-    flex: 1 1 45%;
-    padding: 12px;
-    margin: 5px;
-    border: none;
-    border-radius: 50px;
-    font-size: 1.3rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s;
-    font-family: 'Kanit', sans-serif;
-  }
-  
-  .print-button {
-    background-color: #6c757d; /* Gray */
-    color: #ffffff;
-  }
-  
-  .print-button:hover {
-    background-color: #5a6268;
-    transform: scale(1.05);
-  }
-  
-  .save-image-button {
-    background-color: #28a745; /* Green */
-    color: #ffffff;
-  }
-  
-  .save-image-button:hover {
-    background-color: #218838;
-    transform: scale(1.05);
-  }
-  
-  /* Feedback Button */
-  .feedback-button {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #17a2b8; 
-    color: #ffffff;
-    border: none;
-    border-radius: 50px;
-    font-size: 1.3rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s;
-    font-family: 'Kanit', sans-serif;
-    width: 100%;
-  }
-  
-  .feedback-button:hover {
-    background-color: #138496;
-    transform: scale(1.05);
-  }
-  
-  /* For sub-sections (indented input groups) */
-  .sub-section {
-    margin-left: 40px;
-  }
-  
-  /* Modal */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    padding-top: 100px;
     left: 0;
     top: 0;
     width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.5);
   }
-  
-  .modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 30px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    border-radius: 8px;
-    text-align: center;
+  /* Hide buttons during print */
+  .additional-buttons,
+  .navigation-buttons,
+  .feedback-button {
+    display: none;
   }
-  
-  .modal-content h2 {
-    margin-top: 0;
-  }
-  
-  .modal-content ul {
-    text-align: left;
-    padding-left: 20px;
-  }
-  
-  .modal-content button {
-    width: auto;
-    padding: 10px 20px;
-    font-size: 1.2rem;
-    margin-top: 20px;
-    border-radius: 50px;
-  }
-  
-  /* Recommended Investments Box */
-  #recommended-investments {
-    margin-top: 30px;
-    padding: 20px;
-    background-color: #f0f8ff;
-    border-radius: 8px;
-  }
-  
-  #recommended-investments h3 {
-    color: #007bff;
-    font-size: 1.5rem;
-    margin-bottom: 15px;
-  }
-  
-  #recommended-investments p {
-    font-size: 1.2rem;
-    color: #333333;
-  }
-  
-  /* Withholding Tax Display */
-  #result_withholding_tax {
-    color: #17a2b8; /* Teal */
-    font-size: 1.3em;
-    font-weight: bold;
-  }
-  
-  /* Limit Labels for real-time sub-limit display */
-  .input-with-limit {
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin-top: 8px;
-  }
-  
-  .limit-label {
-    margin-left: 8px;
-    color: #888;
-    font-size: 0.9rem;
-    white-space: nowrap;
-  }
-  
-  /* Responsive */
-  @media (max-width: 768px) {
-    .container {
-      padding: 20px;
-      margin: 20px auto;
-    }
-  
-    .container h1 {
-      font-size: 2rem;
-    }
-  
-    button {
-      font-size: 1.5rem;
-    }
-  
-    label {
-      font-size: 1rem;
-    }
-  
-    input[type="text"], select {
-      font-size: 1rem;
-    }
-  
-    .checkbox-group {
-      font-size: 1rem;
-    }
-  
-    .info {
-      font-size: 0.9rem;
-    }
-  
-    .stepper-step-label {
-      font-size: 0.8rem;
-    }
-  
-    .print-button, .save-image-button {
-      flex: 1 1 100%;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    body {
-      font-size: 16px;
-    }
-  
-    .container {
-      padding: 15px;
-    }
-  
-    .container h1 {
-      font-size: 1.8rem;
-    }
-  
-    button {
-      font-size: 1.3rem;
-    }
-  
-    .stepper::before,
-    .stepper::after {
-      left: 5%;
-      right: 5%;
-    }
-  }
-  
-  /* Print Styles */
-  @media print {
-    body * {
-      visibility: hidden;
-    }
-    #step-4, #step-4 * {
-      visibility: visible;
-    }
-    #step-4 {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 100%;
-    }
-    /* Hide buttons during print */
-    .additional-buttons,
-    .navigation-buttons,
-    .feedback-button {
-      display: none;
-    }
-  }
-  
-  #printable-area {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-  
+}
+
+#printable-area {
+  padding-left: 20px;
+  padding-right: 20px;
+}
