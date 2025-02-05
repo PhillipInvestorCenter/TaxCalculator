@@ -382,13 +382,16 @@
           ลดหย่อนได้ตามที่จ่ายจริง แต่ไม่เกิน 50,000 บาท. <a href="https://etax.rd.go.th/etax_staticpage/app/#/index/registered#top" target="_blank">ตรวจสอบรายชื่อรายชื่อผู้ประกอบการได้ที่นี่</a>
         </div>
 
-        <label>ค่าลดหย่อนเที่ยวเมืองรอง (บาท):
-          <span class="limit-label" id="local_travel_limit_label"></span>
-          <span class="error" id="local_travel_error"></span>
-        </label>
-        <input type="text" id="local_travel" value="0" inputmode="decimal">
-        <div class="info">
-          ลดหย่อนได้ตามที่จ่ายจริง แต่ไม่เกิน 15,000 บาท
+        <!-- Wrapped local travel block -->
+        <div id="local_travel_container">
+          <label>ค่าลดหย่อนเที่ยวเมืองรอง (บาท):
+            <span class="limit-label" id="local_travel_limit_label"></span>
+            <span class="error" id="local_travel_error"></span>
+          </label>
+          <input type="text" id="local_travel" value="0" inputmode="decimal">
+          <div class="info">
+            ลดหย่อนได้ตามที่จ่ายจริง แต่ไม่เกิน 15,000 บาท
+          </div>
         </div>
 
         <label>ดอกเบี้ยกู้ยืมเพื่อที่อยู่อาศัย (บาท):
