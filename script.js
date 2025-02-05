@@ -254,6 +254,18 @@ function startCalculator(taxYear) {
     }
   }
   
+  if (selectedTaxYear === 2568) {
+    const localTravelContainer = document.getElementById('local_travel_container');
+    if (localTravelContainer) {
+      localTravelContainer.style.display = 'none';
+    }
+  } else {
+    const localTravelContainer = document.getElementById('local_travel_container');
+    if (localTravelContainer) {
+      localTravelContainer.style.display = 'block';
+    }
+  }
+  
   // Hide landing page and show main container
   document.getElementById('landing-page').style.display = 'none';
   document.getElementById('main-container').style.display = 'block';
