@@ -9,6 +9,9 @@ let expense = 0;
 let total_withholding_tax = 0;
 let isTaxCalculated = false;
 
+// Global variable for tax year (set on landing page)
+let selectedTaxYear = 2567; // default; will be overwritten by landing page selection
+
 // Checkboxes for income type
 let incomeTypeCheckboxes = null;
 
@@ -16,8 +19,7 @@ let incomeTypeCheckboxes = null;
 const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'ssf', 'nsf'];
 const MAX_TOTAL_RETIREMENT = 500000;
 
-// We’ll also define “other deduction” fields for real-time clamp
-// so you can add logic for each field’s sub-limit (like ThaiESG).
+// “Other deduction” fields for real-time clamp
 const otherDeductionFields = [
   'life_insurance',
   'health_insurance',
@@ -38,7 +40,6 @@ const otherDeductionFields = [
 window.onload = function () {
   incomeTypeCheckboxes = document.querySelectorAll('input[name="income_type"]');
 
-  // Attach comma-format & focus/blur logic to numeric fields
   const numberFields = [
     'annual_income', 'monthly_income', 'bonus_income', 'other_income',
     'life_insurance', 'health_insurance', 'parent_health_insurance',
@@ -52,11 +53,9 @@ window.onload = function () {
     addCommaEvent(id);
     const input = document.getElementById(id);
     if (input) {
-      // Remove '0' on focus
       input.addEventListener('focus', function () {
         if (this.value === '0') this.value = '';
       });
-      // Put back '0' if empty on blur
       input.addEventListener('blur', function () {
         if (this.value === '') this.value = '0';
         updateDeductionLimits();
@@ -64,17 +63,14 @@ window.onload = function () {
     }
   });
 
-  // Setup income type & withholding tax logic
   setupIncomeTypeListeners();
   setupWithholdingTaxListeners();
 
-  // "Other income" checkbox
   document.getElementById('has_other_income').addEventListener('change', function () {
     document.getElementById('other_income_section').style.display = this.checked ? 'block' : 'none';
     updateDeductionLimits();
   });
 
-  // Social security checkbox
   document.getElementById('has_social_security').addEventListener('change', function () {
     document.getElementById('social_security_section').style.display = this.checked ? 'block' : 'none';
     if (this.checked) calculateSocialSecurity();
@@ -82,7 +78,6 @@ window.onload = function () {
     updateDeductionLimits();
   });
 
-  // Recalculate social security if monthly/annual changes
   document.getElementById('monthly_income').addEventListener('input', function () {
     const incomeType = document.querySelector('input[name="income_type"]:checked');
     if (incomeType && incomeType.value === 'monthly') {
@@ -99,7 +94,6 @@ window.onload = function () {
     }
   });
 
-  // Retirement fields => real-time clamp
   retirementFields.forEach((fieldId) => {
     const elem = document.getElementById(fieldId);
     if (elem) {
@@ -109,7 +103,6 @@ window.onload = function () {
     }
   });
 
-  // Other deduction fields => real-time clamp
   otherDeductionFields.forEach((fieldId) => {
     const elem = document.getElementById(fieldId);
     if (elem) {
@@ -119,7 +112,6 @@ window.onload = function () {
     }
   });
 
-  // Show/hide insurance/donation/stimulus sections
   document.getElementById('has_insurance').addEventListener('change', function () {
     document.getElementById('insurance_section').style.display = this.checked ? 'block' : 'none';
     updateRetirementDeductions();
@@ -134,7 +126,8 @@ window.onload = function () {
     updateDeductionLimits();
   });
 
-  // Stepper steps
+  // (Tax year selection is now handled on the landing page, so remove previous tax-year checkbox listeners)
+
   const stepperSteps = document.querySelectorAll('.stepper .stepper-step');
   stepperSteps.forEach((step) => {
     step.addEventListener('click', function () {
@@ -152,10 +145,8 @@ window.onload = function () {
     });
   });
 
-  // Pension insurance + life partial fix
   document.getElementById('pension_insurance').addEventListener('blur', handlePensionInsuranceInput);
 
-  // Life insurance clamp on blur
   document.getElementById('life_insurance').addEventListener('blur', function () {
     let val = parseNumber(this.value) || 0;
     if (val > 100000) {
@@ -166,7 +157,6 @@ window.onload = function () {
     updateDeductionLimits();
   });
 
-  // Populate children/adopted/disabled selects
   populateChildrenOptions();
 };
 
@@ -176,12 +166,10 @@ window.onload = function () {
 function setupIncomeTypeListeners() {
   incomeTypeCheckboxes.forEach((checkbox) => {
     checkbox.addEventListener('change', function () {
-      // Uncheck others
       incomeTypeCheckboxes.forEach((c) => {
         if (c !== this) c.checked = false;
       });
 
-      // Hide all sections first
       document.getElementById('annual_income_section').style.display = 'none';
       document.getElementById('withholding_tax_annual_checkbox_section').style.display = 'none';
       document.getElementById('withholding_tax_annual_section').style.display = 'none';
@@ -189,7 +177,6 @@ function setupIncomeTypeListeners() {
       document.getElementById('withholding_tax_monthly_checkbox_section').style.display = 'none';
       document.getElementById('withholding_tax_monthly_section').style.display = 'none';
 
-      // Reset withholding fields
       document.getElementById('withholding_tax_annual_checkbox').checked = false;
       document.getElementById('withholding_tax_annual_input').value = '0';
       document.getElementById('withholding_tax_monthly_checkbox').checked = false;
@@ -245,7 +232,29 @@ function setupWithholdingTaxListeners() {
 // ============================================
 // Step Navigation
 // ============================================
-function startCalculator() {
+
+// Modified startCalculator to accept tax year parameter
+function startCalculator(taxYear) {
+  selectedTaxYear = taxYear;
+  
+  // For tax year 2568, hide SSF input and clear its value
+  if (selectedTaxYear === 2568) {
+    const ssfContainer = document.getElementById('ssf_container');
+    if (ssfContainer) {
+      ssfContainer.style.display = 'none';
+    }
+    const ssfInput = document.getElementById('ssf');
+    if (ssfInput) {
+      ssfInput.value = '0';
+    }
+  } else {
+    const ssfContainer = document.getElementById('ssf_container');
+    if (ssfContainer) {
+      ssfContainer.style.display = 'block';
+    }
+  }
+  
+  // Hide landing page and show main container
   document.getElementById('landing-page').style.display = 'none';
   document.getElementById('main-container').style.display = 'block';
   setActiveStep(1);
@@ -263,7 +272,6 @@ function prevStep(currentStep) {
 function nextStep(currentStep) {
   if (validateStep(currentStep)) {
     if (currentStep === 1) {
-      // Gather income data
       let incomeType = '';
       incomeTypeCheckboxes.forEach((c) => {
         if (c.checked) incomeType = c.value;
@@ -285,7 +293,6 @@ function nextStep(currentStep) {
         total_income += otherVal;
       }
 
-      // Expense => 50% up to 100k
       expense = total_income * 0.5;
       if (expense > 100000) expense = 100000;
       document.getElementById('expense_display').innerText = formatNumber(expense);
@@ -293,7 +300,6 @@ function nextStep(currentStep) {
       total_withholding_tax = calculateTotalWithholdingTax();
       setActiveStep(2);
       showStep(2);
-
       updateDeductionLimits();
     } else if (currentStep === 2) {
       setActiveStep(3);
@@ -484,11 +490,9 @@ function handleRetirementFieldChange(changedFieldId) {
   const changedElem = document.getElementById(changedFieldId);
   let typedVal = parseNumber(changedElem.value) || 0;
 
-  // 1) clamp typedVal by field’s own sub-limit
   const subLimit = getRetirementFieldLimit(changedFieldId, total_income);
   if (typedVal > subLimit) typedVal = subLimit;
 
-  // 2) check combined leftover
   const sumOthers = getCurrentRetirementTotalExcluding(changedFieldId);
   let newTotal = sumOthers + typedVal;
   if (newTotal > MAX_TOTAL_RETIREMENT) {
@@ -496,10 +500,7 @@ function handleRetirementFieldChange(changedFieldId) {
     if (typedVal < 0) typedVal = 0;
   }
 
-  // 3) update the input
   changedElem.value = formatNumber(typedVal);
-
-  // 4) update
   updateRetirementDeductions();
   updateDeductionLimits();
 }
@@ -523,21 +524,18 @@ function updateRetirementDeductions() {
 // Other Deductions: Real-Time Clamping
 // ============================================
 function getOtherDeductionLimit(fieldId) {
-  // Adjust as needed for each field:
   switch (fieldId) {
-    case 'life_insurance':      return 100000;       // also combined logic with health_insurance => 100k
-    case 'health_insurance':    return 25000;        // also combined with life_insurance
+    case 'life_insurance':      return 100000;
+    case 'health_insurance':    return 25000;
     case 'parent_health_insurance': return 15000;
-    case 'thaiesg':            // min(30% * income, 300k)
-      return Math.min(total_income * 0.30, 300000);
+    case 'thaiesg':            return Math.min(total_income * 0.30, 300000);
     case 'social_enterprise':   return 100000;
-    case 'nsf':                 return 30000;        // also in retirement, same 30k
+    case 'nsf':                 return 30000;
     case 'donation_political':  return 10000;
     case 'easy_ereceipt':       return 50000;
     case 'local_travel':        return 15000;
     case 'home_loan_interest':  return 100000;
-    case 'new_home':            // The actual deduction is computed differently, but we can clamp
-      return Number.MAX_VALUE;  // or if you want to clamp it, set a limit
+    case 'new_home':            return Number.MAX_VALUE;
     default:
       return Number.MAX_VALUE;
   }
@@ -547,11 +545,9 @@ function handleOtherDeductionFieldChange(changedFieldId) {
   const elem = document.getElementById(changedFieldId);
   let typedVal = parseNumber(elem.value) || 0;
 
-  // 1) sub-limit
   const subLimit = getOtherDeductionLimit(changedFieldId);
   if (typedVal > subLimit) typedVal = subLimit;
 
-  // 2) For life+health combined => sum ≤ 100,000
   if (changedFieldId === 'life_insurance' || changedFieldId === 'health_insurance') {
     const otherId = (changedFieldId === 'life_insurance') ? 'health_insurance' : 'life_insurance';
     let otherVal = parseNumber(document.getElementById(otherId).value) || 0;
@@ -562,10 +558,7 @@ function handleOtherDeductionFieldChange(changedFieldId) {
     }
   }
 
-  // 3) update input
   elem.value = formatNumber(typedVal);
-
-  // 4) update
   updateDeductionLimits();
 }
 
@@ -573,28 +566,23 @@ function handleOtherDeductionFieldChange(changedFieldId) {
 // Tax Calculation
 // ============================================
 function calculateTax() {
-  // Clear old errors
   document.querySelectorAll('.error').forEach((el) => (el.innerText = ''));
-
   let errorMessages = [];
   let errorFields = [];
 
-  // Personal/family
   let personal_allowance = 60000;
   let spouse = document.getElementById('spouse').value;
   let spouse_allowance = (spouse === 'yes') ? 60000 : 0;
 
-  // Children
   let children_own = parseInt(document.getElementById('children_own').value) || 0;
   let child_allowance = 0;
   for (let i = 1; i <= children_own; i++) {
-    if (i >= 2) child_allowance += 60000; else child_allowance += 30000;
+    child_allowance += (i === 1) ? 30000 : 60000;
   }
   let children_adopted = parseInt(document.getElementById('children_adopted').value) || 0;
   if (children_adopted > 3) children_adopted = 3;
   child_allowance += children_adopted * 30000;
 
-  // Parents
   let parents_allowance = 0;
   if (document.getElementById('your_father').checked) parents_allowance += 30000;
   if (document.getElementById('your_mother').checked) parents_allowance += 30000;
@@ -602,11 +590,9 @@ function calculateTax() {
   if (document.getElementById('spouse_mother').checked) parents_allowance += 30000;
   if (parents_allowance > 120000) parents_allowance = 120000;
 
-  // Disabled
   let disabled_persons = parseInt(document.getElementById('disabled_persons').value) || 0;
   let disabled_allowance = disabled_persons * 60000;
 
-  // Social security
   let social_security = 0;
   if (document.getElementById('has_social_security').checked) {
     social_security = parseNumber(document.getElementById('social_security').value);
@@ -614,7 +600,6 @@ function calculateTax() {
 
   let total_personal_deductions = personal_allowance + spouse_allowance + child_allowance + parents_allowance + disabled_allowance + social_security;
 
-  // Insurance & retirement
   let total_investment_deductions = 0;
   let retirement_total = 0;
   let insurance_total = 0;
@@ -648,7 +633,6 @@ function calculateTax() {
     }
     parent_health_val = Math.min(parent_health_val, 15000);
 
-    // Retirement
     let pensionVal = parseNumber(document.getElementById('pension_insurance').value);
     let pensionLimit = Math.min(total_income * 0.15, 200000);
     if (pensionVal > pensionLimit) {
@@ -673,8 +657,11 @@ function calculateTax() {
     }
     gpfVal = Math.min(gpfVal, gpfLimit);
 
-    let ssfVal = parseNumber(document.getElementById('ssf').value);
     let ssfLimit = Math.min(total_income * 0.30, 200000);
+    let ssfVal = 0;
+    if (selectedTaxYear === 2567) {
+      ssfVal = parseNumber(document.getElementById('ssf').value) || 0;
+    }
     if (ssfVal > ssfLimit) {
       errorMessages.push('SSF เกิน limit');
       errorFields.push('ssf');
@@ -721,7 +708,6 @@ function calculateTax() {
     total_investment_deductions = insurance_total + parent_health_val + retirement_total + thaiesgVal + socialEntVal;
   }
 
-  // Donation
   let total_donation_deductions = 0;
   if (document.getElementById('has_donation').checked) {
     let donationVal = parseNumber(document.getElementById('donation').value);
@@ -732,11 +718,9 @@ function calculateTax() {
       errorFields.push('donation_political');
     }
     donationPolit = Math.min(donationPolit, 10000);
-
     total_donation_deductions = donationVal + donationEdu + donationPolit;
   }
 
-  // Stimulus
   let total_stimulus_deductions = 0;
   if (document.getElementById('has_stimulus').checked) {
     let easyVal = parseNumber(document.getElementById('easy_ereceipt').value);
@@ -771,7 +755,6 @@ function calculateTax() {
     total_stimulus_deductions = easyVal + localVal + homeLoanVal + newHomeDeduction;
   }
 
-  // If any errors, show modal
   if (errorMessages.length > 0) {
     showErrorModal(errorMessages, errorFields);
     return;
@@ -781,7 +764,6 @@ function calculateTax() {
   let taxable_income = total_income - total_deductions;
   if (taxable_income < 0) taxable_income = 0;
 
-  // 10% donation limit
   if (document.getElementById('has_donation').checked) {
     let donationLimit = taxable_income * 0.10;
     if (total_donation_deductions > donationLimit) {
@@ -793,7 +775,6 @@ function calculateTax() {
   let net_income = total_income - total_deductions;
   if (net_income < 0) net_income = 0;
 
-  // Tax table
   let tax = 0;
   if (net_income <= 150000) {
     tax = 0;
@@ -818,13 +799,16 @@ function calculateTax() {
     effective_tax_rate = (tax / total_income) * 100;
   }
 
-  // Recommended SSF / RMF / ThaiESG
+  // Recommended Investments
   let excess_over_150k = net_income > 150000 ? net_income - 150000 : 0;
   let ssf_limit = Math.min(total_income * 0.30, 200000);
   let rmf_limit = Math.min(total_income * 0.30, 500000);
   let thaiesg_limit_final = Math.min(total_income * 0.30, 300000);
 
-  let current_ssf = parseNumber(document.getElementById('ssf').value) || 0;
+  let current_ssf = 0;
+  if (selectedTaxYear === 2567) {
+    current_ssf = parseNumber(document.getElementById('ssf').value) || 0;
+  }
   let current_rmf = parseNumber(document.getElementById('rmf').value) || 0;
   let current_pvd = parseNumber(document.getElementById('pvd').value) || 0;
   let current_gpf = parseNumber(document.getElementById('gpf').value) || 0;
@@ -846,7 +830,12 @@ function calculateTax() {
     Math.min(thaiesg_limit_final - current_thaiesg, (total_income * 0.30) - current_thaiesg)
   );
 
-  let recommended_ssf = Math.min(recommended_ssf_raw, excess_over_150k);
+  let recommended_ssf = 0;
+  if (selectedTaxYear === 2567) {
+    recommended_ssf = Math.min(recommended_ssf_raw, excess_over_150k);
+  } else {
+    recommended_ssf = 0;
+  }
   let recommended_rmf = Math.min(recommended_rmf_raw, excess_over_150k);
   let recommended_thaiesg = Math.min(recommended_thaiesg_raw, excess_over_150k);
 
@@ -855,8 +844,7 @@ function calculateTax() {
     recommended_rmf = 0;
     recommended_thaiesg = 0;
   }
-
-  // Display final
+  
   document.getElementById('result_total_income').innerText = formatNumber(total_income);
   document.getElementById('result_expense').innerText = formatNumber(expense);
   document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
@@ -894,8 +882,11 @@ function calculateTax() {
     taxSummaryDiv.style.display = 'none';
   }
 
-  // Show recommended
-  updateInvestmentDisplay('max_ssf', recommended_ssf);
+  if (selectedTaxYear === 2568) {
+    updateInvestmentDisplay('max_ssf', 0);
+  } else {
+    updateInvestmentDisplay('max_ssf', recommended_ssf);
+  }
   updateInvestmentDisplay('max_rmf', recommended_rmf);
   updateInvestmentDisplay('max_thaiesg', recommended_thaiesg);
 
@@ -991,8 +982,9 @@ function resetData() {
   showStep(1);
 
   document.getElementById('step-4').style.display = 'none';
-  document.getElementById('landing-page').style.display = 'none';
-  document.getElementById('main-container').style.display = 'block';
+  // Return to landing page for tax year selection
+  document.getElementById('landing-page').style.display = 'flex';
+  document.getElementById('main-container').style.display = 'none';
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
   updateDeductionLimits();
@@ -1070,7 +1062,6 @@ function addCommaEvent(id) {
         let diff = this.value.length - raw.length;
         this.selectionEnd = cursorPos + diff;
       } else {
-        // Non-numeric
         this.value = this.value.substring(0, cursorPos - 1) + this.value.substring(cursorPos);
         this.selectionEnd = cursorPos - 1;
       }
@@ -1124,7 +1115,6 @@ function handlePensionInsuranceInput() {
 function updateDeductionLimits() {
   const income = total_income || 0;
 
-  // Insurance, health, etc.
   const lifeInsuranceLimit = 100000;
   const healthInsuranceLimit = 25000;
   const parentHealthLimit = 15000;
@@ -1135,22 +1125,28 @@ function updateDeductionLimits() {
   const rmfLimit = Math.min(income * 0.30, 500000);
   const thaiesgLimit = Math.min(income * 0.30, 300000);
   const socialEnterpriseLimit = 100000;
-  const nsfLimit = 30000;
   const donationPoliticalLimit = 10000;
   const easyEreceiptLimit = 50000;
   const localTravelLimit = 15000;
   const homeLoanLimit = 100000;
   const newHomeLimit = 100000;
+  const nsfLimit = 30000;
 
-  // Retirement
   setLimitLabel('pension_insurance', 'pension_insurance_limit_label', pensionInsuranceLimit);
   setLimitLabel('pvd', 'pvd_limit_label', pvdLimit);
   setLimitLabel('gpf', 'gpf_limit_label', gpfLimit);
-  setLimitLabel('ssf', 'ssf_limit_label', ssfLimit);
+  if (selectedTaxYear === 2567) {
+    setLimitLabel('ssf', 'ssf_limit_label', ssfLimit);
+  } else {
+    const ssfLabel = document.getElementById('ssf_limit_label');
+    if (ssfLabel) {
+      ssfLabel.innerText = 'ไม่สามารถซื้อเพิ่มได้';
+      ssfLabel.style.color = 'red';
+    }
+  }
   setLimitLabel('rmf', 'rmf_limit_label', rmfLimit);
   setLimitLabel('nsf', 'nsf_limit_label', nsfLimit);
 
-  // Others
   setLimitLabel('life_insurance', 'life_insurance_limit_label', lifeInsuranceLimit);
   setLimitLabel('health_insurance', 'health_insurance_limit_label', healthInsuranceLimit);
   setLimitLabel('parent_health_insurance', 'parent_health_insurance_limit_label', parentHealthLimit);
@@ -1209,7 +1205,6 @@ function setLimitLabel(inputId, labelId, subLimit) {
       labelElem.style.color = '#888';
     }
   } else {
-    // Non-retirement => normal
     if (currentValue >= subLimit) {
       labelElem.innerText = '(สิทธิเต็ม)';
       labelElem.style.color = 'red';
@@ -1219,7 +1214,6 @@ function setLimitLabel(inputId, labelId, subLimit) {
     }
   }
 }
-
 
 /**
  * Populate children & disabled selects
