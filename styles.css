@@ -1,0 +1,653 @@
+/* Base and Global */
+body {
+  font-family: 'Kanit', sans-serif;
+  background-color: #f0f2f5;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+/* Landing Page */
+.landing-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.landing-page h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.landing-page p {
+  font-size: 1.3rem;
+  margin-bottom: 40px;
+  max-width: 600px;
+  color: #333333;
+}
+
+.landing-page button {
+  padding: 18px 40px;
+  font-size: 1.6rem;
+  background-color: #ffffff;
+  color: #4a90e2;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+  font-family: 'Kanit', sans-serif;
+}
+
+.landing-page button:hover {
+  background-color: #e0e0e0;
+  transform: scale(1.05);
+}
+
+/* Container */
+.container {
+  max-width: 850px;
+  margin: 30px auto;
+  background-color: #ffffff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  display: none;
+  position: relative;
+}
+
+.container h1 {
+  text-align: center;
+  font-size: 2.2rem;
+  margin-bottom: 30px;
+  color: #333333;
+}
+
+/* Labels and Inputs */
+label {
+  display: block;
+  margin-top: 20px;
+  font-weight: 600;
+  color: #555555;
+  font-size: 1.1rem;
+}
+
+input[type="text"], select {
+  width: 100%;
+  padding: 14px;
+  margin-top: 8px;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1.1rem;
+  font-family: 'Kanit', sans-serif; /* Enforced Kanit for dropdown boxes */
+}
+
+.info {
+  font-size: 0.95rem;
+  color: #777777;
+  margin-top: 4px;
+}
+
+/* Buttons */
+button {
+  margin-top: 30px;
+  padding: 18px;
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.6rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+  font-family: 'Kanit', sans-serif;
+}
+
+button:hover {
+  background-color: #0056b3;
+  transform: scale(1.05);
+}
+
+/* Checkboxes */
+input[type="checkbox"] {
+  margin-right: 10px;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 1.1rem;
+}
+
+/* Tax Year Options */
+.tax-year-options {
+  margin-top: 15px;
+  display: flex;
+  gap: 20px;
+}
+
+/* Step Content */
+.step-content {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.step-content.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Navigation Buttons (Prev/Next) */
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.navigation-buttons button {
+  width: 45%;
+  font-family: 'Kanit', sans-serif;
+  margin: 5px;
+}
+
+/* Error Messages */
+.error {
+  color: red;
+  font-size: 0.9rem;
+  margin-left: 10px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   NEW ARROW-STYLE STEPPER (Different Colors for Odd & Even Steps)
+   ────────────────────────────────────────────────────────────── */
+.stepper {
+  display: flex;
+  margin-bottom: 30px;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+/* Default (non-active) states */
+/* Odd steps (1 & 3): Darker blue */
+.stepper-step:nth-child(odd) {
+  flex: 1;
+  position: relative;
+  background-color: #6699cc;  /* darker blue */
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  padding: 15px 0;
+  transition: background-color 0.3s, color 0.3s;
+  cursor: pointer;
+}
+
+/* Even steps (2 & 4): Lighter blue */
+.stepper-step:nth-child(even) {
+  flex: 1;
+  position: relative;
+  background-color: #99ccff;  /* lighter blue */
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  padding: 15px 0;
+  transition: background-color 0.3s, color 0.3s;
+  cursor: pointer;
+}
+
+/* Arrow effect for default state */
+.stepper-step:nth-child(odd)::before,
+.stepper-step:nth-child(even)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -20px;
+  width: 0;
+  height: 0;
+  border-top: 30px solid transparent;
+  border-bottom: 30px solid transparent;
+  z-index: 1;
+}
+
+/* Set arrow colors according to step parity */
+.stepper-step:nth-child(odd)::before {
+  border-left: 20px solid #6699cc;
+}
+.stepper-step:nth-child(even)::before {
+  border-left: 20px solid #99ccff;
+}
+
+/* Remove arrow on final step */
+.stepper-step:last-child::before {
+  display: none;
+}
+
+/* Active states */
+/* Odd steps active: even darker blue */
+.stepper-step:nth-child(odd).active {
+  background-color: #0056b3;
+  color: #fff;
+}
+.stepper-step:nth-child(odd).active::before {
+  border-left-color: #0056b3;
+}
+
+/* Even steps active: moderate blue */
+.stepper-step:nth-child(even).active {
+  background-color: #007bff;
+  color: #fff;
+}
+.stepper-step:nth-child(even).active::before {
+  border-left-color: #007bff;
+}
+
+/* Completed states */
+/* Odd steps completed: same as odd active */
+.stepper-step:nth-child(odd).completed {
+  background-color: #0056b3;
+  color: #fff;
+}
+.stepper-step:nth-child(odd).completed::before {
+  border-left-color: #0056b3;
+}
+
+/* Even steps completed: same as even active */
+.stepper-step:nth-child(even).completed {
+  background-color: #007bff;
+  color: #fff;
+}
+.stepper-step:nth-child(even).completed::before {
+  border-left-color: #007bff;
+}
+
+/* If any old circular step icon exists, hide it */
+.stepper-step-circle {
+  display: none !important;
+}
+
+/* Step labels inside each arrow */
+.stepper-step-label {
+  font-size: 1rem;
+  margin-top: 0;
+}
+
+/* Deduction Sections (colored backgrounds) */
+.deduction-section {
+  margin-top: 30px;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.section-personal {
+  background-color: #fef9e7;
+}
+
+.section-insurance {
+  background-color: #e8f8f5;
+}
+
+.section-donation {
+  background-color: #f9ebea;
+}
+
+.section-stimulus {
+  background-color: #e8daef;
+}
+
+/* Expense Display (Step 2) */
+.expense-value {
+  color: #28a745;
+  font-size: 2em;
+  font-weight: bold;
+}
+
+/* Result Section (Step 4) */
+.step-content#step-4 h2 {
+  color: #28a745;
+  font-size: 2rem;
+  margin-top: 0;
+}
+
+.step-content#step-4 p {
+  font-size: 1.3rem;
+  color: #333333;
+}
+
+/* Summary Fields */
+#tax_summary {
+  margin-top: 20px;
+}
+
+/* Remove old large styles for .tax-due-real and .tax-credit-refund 
+   and unify them to normal text size/color */
+.tax-due-real,
+.tax-credit-refund {
+  font-size: inherit;
+  color: inherit;
+  font-weight: 600; /* or 'normal' if you prefer */
+}
+
+/* If you previously had .tax-due-real { font-size: 1.5em; color: red; }, etc., 
+   remove or comment them out to avoid conflict */
+
+/* Additional Buttons for printing or saving */
+.additional-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.print-button, .save-image-button {
+  flex: 1 1 45%;
+  padding: 12px;
+  margin: 5px;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+  font-family: 'Kanit', sans-serif;
+}
+
+.print-button {
+  background-color: #6c757d;
+  color: #ffffff;
+}
+
+.print-button:hover {
+  background-color: #5a6268;
+  transform: scale(1.05);
+}
+
+.save-image-button {
+  background-color: #28a745;
+  color: #ffffff;
+}
+
+.save-image-button:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+}
+
+/* Feedback Button */
+.feedback-button {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #17a2b8; 
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s;
+  font-family: 'Kanit', sans-serif;
+  width: 100%;
+}
+
+.feedback-button:hover {
+  background-color: #138496;
+  transform: scale(1.05);
+}
+
+/* For sub-sections (indented input groups) */
+.sub-section {
+  margin-left: 40px;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 30px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.modal-content h2 {
+  margin-top: 0;
+}
+
+.modal-content ul {
+  text-align: left;
+  padding-left: 20px;
+}
+
+.modal-content button {
+  width: auto;
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  border-radius: 50px;
+}
+
+/* Recommended Investments Box */
+#recommended-investments {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f0f8ff;
+  border-radius: 8px;
+}
+
+#recommended-investments h3 {
+  font-size: 1.3rem; /* Reduced from 1.5rem */
+}
+
+#recommended-investments p {
+  font-size: 1.1rem; /* Reduced from 1.2rem */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Limit Labels for real-time sub-limit display */
+.input-with-limit {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.limit-label {
+  margin-left: 8px;
+  color: #888;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+    margin: 20px auto;
+  }
+
+  .container h1 {
+    font-size: 2rem;
+  }
+
+  button {
+    font-size: 1.5rem;
+  }
+
+  label {
+    font-size: 1rem;
+  }
+
+  input[type="text"], select {
+    font-size: 1rem;
+  }
+
+  .checkbox-group {
+    font-size: 1rem;
+  }
+
+  .info {
+    font-size: 0.9rem;
+  }
+
+  .stepper-step-label {
+    font-size: 0.8rem;
+  }
+
+  .print-button, .save-image-button {
+    flex: 1 1 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 16px;
+  }
+
+  .container {
+    padding: 15px;
+  }
+
+  .container h1 {
+    font-size: 1.8rem;
+  }
+
+  button {
+    font-size: 1.3rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #step-4, #step-4 * {
+    visibility: visible;
+  }
+  #step-4 {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  .additional-buttons,
+  .navigation-buttons,
+  .feedback-button {
+    display: none;
+  }
+}
+
+#printable-area {
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* Floating Reset Buttons */
+.float-reset {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #007bff;
+  color: white;
+  padding: 10px 15px;
+  border-radius: 25px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Floating Scroll Arrow Button */
+.scroll-arrow {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  background: rgba(0,123,255,0.8);
+  color: white;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 1000;
+  font-size: 20px;
+  display: none; /* Will be toggled via JS */
+}
+
+/* Narrow receipt container */
+.receipt-container {
+  max-width: 400px;
+  margin: 0 auto;   /* center horizontally */
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+/* Each row: label on left, value on right */
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0; /* slight vertical gap */
+}
+
+.receipt-label {
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.receipt-value {
+  text-align: right;
+  flex: 1;
+  color: #333;
+  font-weight: 600;
+}
+
+/* So that “ภาษีที่ต้องชำระจริง” or “จำนวนเงินที่คุณต้องขอเครดิตคืน” lines remain aligned */
+.tax-due-real,
+.tax-credit-refund {
+  margin: 0;
+}
+
+/* Add somewhere in styles.css */
+.inline-checkbox {
+  display: flex;
+  align-items: center; 
+  margin-top: 10px;     /* or your preferred spacing */
+}
+.inline-checkbox input[type="checkbox"] {
+  margin-right: 8px;    /* spacing between checkbox and label */
+}
+
+.new-badge {
+  background-color: #ffeb3b;
+  color: #d32f2f;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-left: 5px;
+}
