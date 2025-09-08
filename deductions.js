@@ -1,6 +1,6 @@
 // deductions.js
 
-// Retirement Fields: Real-Time Clamping
+// Retirement Fields: Real-Time Clamping (SSF removed for 2568-only)
 function getRetirementFieldLimit(fieldId, totalIncome) {
   switch (fieldId) {
     case 'pension_insurance':
@@ -11,8 +11,6 @@ function getRetirementFieldLimit(fieldId, totalIncome) {
       return Math.min(totalIncome * 0.30, 500000);
     case 'rmf':
       return Math.min(totalIncome * 0.30, 500000);
-    case 'ssf':
-      return Math.min(totalIncome * 0.30, 200000);
     case 'nsf':
       return 30000;
     default:
@@ -22,7 +20,7 @@ function getRetirementFieldLimit(fieldId, totalIncome) {
 
 function getCurrentRetirementTotalExcluding(excludeFieldId) {
   let total = 0;
-  const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'ssf', 'nsf'];
+  const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'nsf']; // SSF removed
   retirementFields.forEach((f) => {
     if (f !== excludeFieldId) {
       const elem = document.getElementById(f);
@@ -53,7 +51,7 @@ function handleRetirementFieldChange(changedFieldId) {
 
 function getCurrentRetirementTotal() {
   let sum = 0;
-  const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'ssf', 'nsf'];
+  const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'nsf']; // SSF removed
   retirementFields.forEach((f) => {
     const elem = document.getElementById(f);
     if (elem) {
@@ -119,7 +117,6 @@ function updateDeductionLimits() {
   const pensionInsuranceLimit = Math.min(income * 0.15, 200000);
   const pvdLimit = Math.min(income * 0.15, 500000);
   const gpfLimit = Math.min(income * 0.30, 500000);
-  const ssfLimit = Math.min(income * 0.30, 200000);
   const rmfLimit = Math.min(income * 0.30, 500000);
   const thaiesgLimit = Math.min(income * 0.30, 300000);
   const socialEnterpriseLimit = 100000;
@@ -134,23 +131,15 @@ function updateDeductionLimits() {
   setLimitLabel('pension_insurance', 'pension_insurance_limit_label', pensionInsuranceLimit);
   setLimitLabel('pvd', 'pvd_limit_label', pvdLimit);
   setLimitLabel('gpf', 'gpf_limit_label', gpfLimit);
-  if (selectedTaxYear === 2567) {
-    setLimitLabel('ssf', 'ssf_limit_label', ssfLimit);
-  } else {
-    const ssfLabel = document.getElementById('ssf_limit_label');
-    if (ssfLabel) {
-      ssfLabel.innerText = 'ไม่สามารถซื้อเพิ่มได้';
-      ssfLabel.style.color = 'red';
-    }
-  }
   setLimitLabel('rmf', 'rmf_limit_label', rmfLimit);
   setLimitLabel('nsf', 'nsf_limit_label', nsfLimit);
 
   setLimitLabel('life_insurance', 'life_insurance_limit_label', lifeInsuranceLimit);
   setLimitLabel('health_insurance', 'health_insurance_limit_label', healthInsuranceLimit);
   setLimitLabel('parent_health_insurance', 'parent_health_insurance_limit_label', parentHealthLimit);
-  setLimitLabel('thaiesg', 'thaiesg_limit_label', Math.min(income * 0.30, 300000));
-  // Updated limits for Thai ESG Extra fields
+  setLimitLabel('thaiesg', 'thaiesg_limit_label', thaiesgLimit);
+
+  // Thai ESG Extra fields always available in 2568
   setLimitLabel('thaiesg_extra_transfer', 'thaiesg_extra_transfer_limit_label', Math.min(income * 0.30, 300000));
   setLimitLabel('thaiesg_extra_new', 'thaiesg_extra_new_limit_label', Math.min(income * 0.30, 300000));
   
@@ -163,6 +152,13 @@ function updateDeductionLimits() {
 
   setLimitLabel('social_security', 'social_security_limit_label', socialSecurityCap);
 
+  // If SSF label exists in DOM, mark as unavailable
+  const ssfLabel = document.getElementById('ssf_limit_label');
+  if (ssfLabel) {
+    ssfLabel.innerText = 'ไม่สามารถซื้อเพิ่มได้';
+    ssfLabel.style.color = 'red';
+  }
+
   checkTotalRetirementFull();
 }
 
@@ -170,7 +166,7 @@ function checkTotalRetirementFull() {
   const MAX_TOTAL_RETIREMENT = 500000;
   let totalUsed = getCurrentRetirementTotal();
   if (totalUsed >= MAX_TOTAL_RETIREMENT) {
-    const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'ssf', 'nsf'];
+    const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'nsf']; // SSF removed
     retirementFields.forEach((fieldId) => {
       let labelId = fieldId + '_limit_label';
       let labelElem = document.getElementById(labelId);
@@ -187,7 +183,7 @@ function setLimitLabel(inputId, labelId, subLimit) {
   const labelElem = document.getElementById(labelId);
   if (!inputElem || !labelElem) return;
   const currentValue = parseNumber(inputElem.value) || 0;
-  const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'ssf', 'nsf'];
+  const retirementFields = ['pension_insurance', 'pvd', 'gpf', 'rmf', 'nsf']; // SSF removed
   if (retirementFields.includes(inputId)) {
     let leftover = 500000 - getCurrentRetirementTotalExcluding(inputId);
     if (leftover < 0) leftover = 0;
