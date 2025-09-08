@@ -6,7 +6,7 @@ let monthly_income = 0;
 let expense = 0;
 let total_withholding_tax = 0;
 let isTaxCalculated = false;
-let selectedTaxYear = 2567; // default tax year, overwritten by selection
+let selectedTaxYear = 2568; // default tax year, overwritten by selection
 let socialSecurityManual = false;
 
 // Store final revenue amounts for each type so we can recalc in Step 2
@@ -172,6 +172,21 @@ window.onload = function () {
     } else {
       scrollArrow.innerHTML = "&#x2193;";
     }
+function setupTooltips() {
+  document.querySelectorAll('.tooltip-container .info-icon').forEach(icon => {
+    const bubble = icon.parentElement.querySelector('.tooltip-bubble');
+    if (!bubble) return;
+    icon.addEventListener('click', e => {
+      e.stopPropagation();
+      bubble.classList.toggle('show');
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.tooltip-bubble.show').forEach(b => b.classList.remove('show'));
+  });
+}
+
+    
   });
 };
 
@@ -254,32 +269,23 @@ function setupRevenueTypeListeners() {
 /** 
  * Called when user clicks one of the tax year buttons on the landing page 
  */
-function startCalculator(taxYear) {
-  selectedTaxYear = taxYear;
-  if (selectedTaxYear === 2568) {
-    const ssfContainer = document.getElementById('ssf_container');
-    if (ssfContainer) ssfContainer.style.display = 'none';
-    const ssfInput = document.getElementById('ssf');
-    if (ssfInput) ssfInput.value = '0';
+function startCalculator() {
+  selectedTaxYear = 2568;
 
-    // Show new Thai ESG Extra fields for tax year 2568
-    const thaiesgExtraContainer = document.getElementById('thaiesg_extra_container');
-    if (thaiesgExtraContainer) thaiesgExtraContainer.style.display = 'block';
-  } else {
-    const ssfContainer = document.getElementById('ssf_container');
-    if (ssfContainer) ssfContainer.style.display = 'block';
+  // Hide SSF for 2568
+  const ssfContainer = document.getElementById('ssf_container');
+  if (ssfContainer) ssfContainer.style.display = 'none';
+  const ssfInput = document.getElementById('ssf');
+  if (ssfInput) ssfInput.value = '0';
 
-    // Hide new Thai ESG Extra fields for non-2568 years
-    const thaiesgExtraContainer = document.getElementById('thaiesg_extra_container');
-    if (thaiesgExtraContainer) thaiesgExtraContainer.style.display = 'none';
-  }
-  if (selectedTaxYear === 2568) {
-    const localTravelContainer = document.getElementById('local_travel_container');
-    if (localTravelContainer) localTravelContainer.style.display = 'none';
-  } else {
-    const localTravelContainer = document.getElementById('local_travel_container');
-    if (localTravelContainer) localTravelContainer.style.display = 'block';
-  }
+  // Show Thai ESG Extra for 2568
+  const thaiesgExtraContainer = document.getElementById('thaiesg_extra_container');
+  if (thaiesgExtraContainer) thaiesgExtraContainer.style.display = 'block';
+
+  // Hide “เที่ยวเมืองรอง 2567”
+  const localTravelContainer = document.getElementById('local_travel_container');
+  if (localTravelContainer) localTravelContainer.style.display = 'none';
+
   document.getElementById('landing-page').style.display = 'none';
   document.getElementById('main-container').style.display = 'block';
   setActiveStep(1);
@@ -884,15 +890,10 @@ function resetPage3() {
 
   // Hide dynamic sections—conditionally skip hiding the Thai ESG Extra container if tax year is 2568.
   let sectionsToHide = [
-    'insurance_section', 'donation_section', 'stimulus_section', 
-    'social_security_section'
+    'insurance_section','donation_section','stimulus_section','social_security_section'
   ];
-  if (selectedTaxYear !== 2568) {
-    sectionsToHide.push('thaiesg_extra_container');
-  }
-  sectionsToHide.forEach(id => {
-    const elem = document.getElementById(id);
-    if (elem) elem.style.display = 'none';
-  });
+  sectionsToHide.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  // do NOT hide 'thaiesg_extra_container'
+
 }
 
