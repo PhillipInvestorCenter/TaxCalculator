@@ -28,8 +28,12 @@ function calculateTotalWithholdingTax() {
   let withholding7 = document.getElementById('rev_type_7').checked &&
                      document.getElementById('rev7_withholding_checkbox').checked
                      ? parseNumber(document.getElementById('rev7_withholding_input').value) * multiplier : 0;
+  let withholding8 = document.getElementById('rev_type_8').checked &&
+                     document.getElementById('rev8_withholding_checkbox').checked
+                     ? parseNumber(document.getElementById('rev8_withholding_input').value) * multiplier : 0;
                      
-  return withholding1 + withholding2 + withholding3 + withholding4 + withholding5 + withholding6 + withholding7;
+  return withholding1 + withholding2 + withholding3 + withholding4 +
+         withholding5 + withholding6 + withholding7 + withholding8;
 }
 
 function calculateSocialSecurity() {
@@ -98,35 +102,29 @@ function calculateTax() {
     insurance_total = Math.min(life_val + health_val, 100000);
     parent_health_val = parseNumber(document.getElementById('parent_health_insurance').value);
     
+    // Retirement buckets (SSF disabled for 2568-only)
     let pensionVal = parseNumber(document.getElementById('pension_insurance').value);
     let pvdVal = parseNumber(document.getElementById('pvd').value);
     let gpfVal = parseNumber(document.getElementById('gpf').value);
-    let ssfVal = 0;
-    if (selectedTaxYear === 2567) {
-      ssfVal = parseNumber(document.getElementById('ssf').value) || 0;
-    }
     let rmfVal = parseNumber(document.getElementById('rmf').value);
-    let thaiesgVal = parseNumber(document.getElementById('thaiesg').value);
-    let socialEntVal = parseNumber(document.getElementById('social_enterprise').value);
     let nsfVal = parseNumber(document.getElementById('nsf').value);
+    let ssfVal = 0; // no SSF in 2568
 
     retirement_total = pensionVal + pvdVal + gpfVal + rmfVal + ssfVal + nsfVal;
     if (retirement_total > 500000) {
       retirement_total = 500000;
     }
     
-    // For Tax Year 2568, include the two new Thai ESG Extra deductions.
-    // Each field is clamped to the lower of 300,000 or 30% of total income.
-    let thaiesgExtraTransferVal = 0;
-    let thaiesgExtraNewVal = 0;
-    if (selectedTaxYear === 2568) {
-      thaiesgExtraTransferVal = parseNumber(document.getElementById('thaiesg_extra_transfer').value) || 0;
-      thaiesgExtraNewVal = parseNumber(document.getElementById('thaiesg_extra_new').value) || 0;
-      let maxExtraLimit = Math.min(300000, total_income * 0.30);
-      thaiesgExtraTransferVal = Math.min(thaiesgExtraTransferVal, maxExtraLimit);
-      thaiesgExtraNewVal = Math.min(thaiesgExtraNewVal, maxExtraLimit);
-    }
-    
+    // Thai ESG and Thai ESG Extra
+    let thaiesgVal = parseNumber(document.getElementById('thaiesg').value);
+    let thaiesgExtraTransferVal = parseNumber(document.getElementById('thaiesg_extra_transfer').value) || 0;
+    let thaiesgExtraNewVal = parseNumber(document.getElementById('thaiesg_extra_new').value) || 0;
+    let maxExtraLimit = Math.min(300000, total_income * 0.30);
+    thaiesgExtraTransferVal = Math.min(thaiesgExtraTransferVal, maxExtraLimit);
+    thaiesgExtraNewVal = Math.min(thaiesgExtraNewVal, maxExtraLimit);
+
+    let socialEntVal = parseNumber(document.getElementById('social_enterprise').value);
+
     total_investment_deductions = insurance_total + parent_health_val + retirement_total +
       thaiesgVal + thaiesgExtraTransferVal + thaiesgExtraNewVal + socialEntVal;
   }
@@ -144,10 +142,9 @@ function calculateTax() {
   let total_stimulus_deductions = 0;
   if (document.getElementById('has_stimulus').checked) {
     let easyVal = parseNumber(document.getElementById('easy_ereceipt').value);
-    let localVal = parseNumber(document.getElementById('local_travel').value);
+    let localVal = parseNumber(document.getElementById('local_travel').value); // hidden in 2568 UI; safe if zero
     let homeLoanVal = parseNumber(document.getElementById('home_loan_interest').value);
     let newHomeVal = parseNumber(document.getElementById('new_home').value);
-    // E.g., every 1,000,000 => 10,000
     let newHomeDeduction = Math.floor(newHomeVal / 1000000) * 10000;
     if (newHomeDeduction > 100000) newHomeDeduction = 100000;
     total_stimulus_deductions = easyVal + localVal + homeLoanVal + newHomeDeduction;
@@ -206,41 +203,34 @@ function calculateTax() {
   }
   
   // ------------------- Fill in Summary Fields -------------------
-  // Basic results
   document.getElementById('result_total_income').innerText = formatNumber(total_income);
   document.getElementById('result_expense').innerText = formatNumber(expense);
   document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
   document.getElementById('result_net_income').innerText = formatNumber(net_income);
   document.getElementById('result_effective_tax_rate').innerText = effective_tax_rate.toFixed(2) + '%';
 
-  // Show the tax (before withholding) in new field "result_tax_before_wh"
   const taxBeforeWH = document.getElementById('result_tax_before_wh');
   if (taxBeforeWH) {
     taxBeforeWH.innerText = formatNumber(tax);
   }
 
-  // Withholding Tax
   total_withholding_tax = calculateTotalWithholdingTax();
   document.getElementById('result_withholding_tax').innerText = formatNumber(total_withholding_tax);
 
   // ------------------- Final Net Tax Due or Refund -------------------
   let X = tax - total_withholding_tax;
-  const taxSummaryDiv = document.getElementById('tax_summary');
   const taxDueReal = document.getElementById('tax_due_real');
   const taxCreditRefund = document.getElementById('tax_credit_refund');
 
   if (X > 0) {
-    // "ภาษีที่ต้องชำระจริง" on the left, numeric value on the right (red)
     taxDueReal.innerText = 'ภาษีที่ต้องชำระจริง';
     taxCreditRefund.innerText = formatNumber(X);
     taxCreditRefund.style.color = 'red';
   } else if (X < 0) {
-    // "ท่านต้องขอเครดิตคืน" on the left, numeric value on the right (green)
     taxDueReal.innerText = 'ท่านต้องขอเครดิตคืน';
     taxCreditRefund.innerText = formatNumber(Math.abs(X));
     taxCreditRefund.style.color = 'green';
   } else {
-    // "ท่านไม่ต้องจ่ายภาษี!" on the left, nothing on the right (default #333)
     taxDueReal.innerText = 'ท่านไม่ต้องจ่ายภาษี!';
     taxCreditRefund.innerText = '';
     taxCreditRefund.style.color = '#333';
@@ -270,65 +260,46 @@ function calculateTax() {
     maxTaxRateElem.innerText = maxTaxRate + '%';
   }
   
-  // ------------------- Compute leftover for recommended investments -------------------
-  // 1) SSF leftover (only if year 2567)
-  let leftoverSSF = 0;
-  if (selectedTaxYear === 2567) {
-    const ssfLimit = Math.min(total_income * 0.30, 200000);
-    const currentSSF = parseNumber(document.getElementById('ssf').value);
-    leftoverSSF = ssfLimit - currentSSF;
-    if (leftoverSSF < 0) leftoverSSF = 0;
-  }
-  
-  // 2) RMF leftover with overall retirement cap considered
+  // ------------------- Recommended investments (2568-only) -------------------
+  // Hide SSF row
+  const ssfRow = document.getElementById('max_ssf') && document.getElementById('max_ssf').parentElement;
+  if (ssfRow) ssfRow.style.display = 'none';
+
+  // RMF with overall cap
   const rmfIndividualLimit = Math.min(total_income * 0.30, 500000);
   const currentRMF = parseNumber(document.getElementById('rmf').value);
 
   let pensionVal = parseNumber(document.getElementById('pension_insurance').value);
   let pvdVal = parseNumber(document.getElementById('pvd').value);
   let gpfVal = parseNumber(document.getElementById('gpf').value);
-  let ssfVal = (selectedTaxYear === 2567) ? parseNumber(document.getElementById('ssf').value) || 0 : 0;
   let nsfVal = parseNumber(document.getElementById('nsf').value);
+  let ssfValForCalc = 0;
 
-  // Calculate the total retirement contributions excluding RMF
-  let totalRetirementWithoutRMF = pensionVal + pvdVal + gpfVal + ssfVal + nsfVal;
+  let totalRetirementWithoutRMF = pensionVal + pvdVal + gpfVal + ssfValForCalc + nsfVal;
   const overallCap = 500000;
-
-  // Calculate the additional amount allowed under the overall retirement cap
   let allowedOverallAdditional = overallCap - (totalRetirementWithoutRMF + currentRMF);
   if (allowedOverallAdditional < 0) allowedOverallAdditional = 0;
 
-  // The leftover RMF investment is the minimum between the individual RMF limit remaining and the overall cap allowance.
   let leftoverRMF = Math.min(rmfIndividualLimit - currentRMF, allowedOverallAdditional);
   if (leftoverRMF < 0) leftoverRMF = 0;
-  
-  // 3) ThaiESG leftover
+
+  updateInvestmentDisplay('max_rmf', leftoverRMF);
+
+  // ThaiESG
   const thaiesgLimit = Math.min(total_income * 0.30, 300000);
   const currentThaiesg = parseNumber(document.getElementById('thaiesg').value);
   let leftoverThaiesg = thaiesgLimit - currentThaiesg;
   if (leftoverThaiesg < 0) leftoverThaiesg = 0;
-  
-  // ------------------- Update recommended investments display -------------------
-  if (selectedTaxYear === 2567) {
-    updateInvestmentDisplay('max_ssf', leftoverSSF);
-    document.getElementById('max_ssf').parentElement.style.display = 'block';
-  } else {
-    // Hide SSF recommendation for tax year 2568
-    document.getElementById('max_ssf').parentElement.style.display = 'none';
-  }
-  updateInvestmentDisplay('max_rmf', leftoverRMF);
   updateInvestmentDisplay('max_thaiesg', leftoverThaiesg);
   
-  if (selectedTaxYear === 2568) {
-    const thaiesgExtraNewLimit = Math.min(300000, total_income * 0.30);
-    const currentThaiesgExtraNew = parseNumber(document.getElementById('thaiesg_extra_new').value);
-    let leftoverThaiesgExtraNew = thaiesgExtraNewLimit - currentThaiesgExtraNew;
-    if (leftoverThaiesgExtraNew < 0) leftoverThaiesgExtraNew = 0;
-    updateInvestmentDisplay('max_thaiesg_extra_new', leftoverThaiesgExtraNew);
-    document.getElementById('max_thaiesg_extra_container').style.display = 'block';
-  } else {
-    document.getElementById('max_thaiesg_extra_container').style.display = 'none';
+  // ThaiESG Extra (always fixed text)
+  const extraEl = document.getElementById('max_thaiesg_extra_new');
+  if (extraEl) {
+    extraEl.innerText = 'ไม่สามารถซื้อเพิ่มได้';
+    extraEl.style.color = 'red';
   }
+  const thaiesgExtraBox = document.getElementById('max_thaiesg_extra_container');
+  if (thaiesgExtraBox) thaiesgExtraBox.style.display = 'block';
   
   // Finish: Go to Step 4 to show summary
   isTaxCalculated = true;
