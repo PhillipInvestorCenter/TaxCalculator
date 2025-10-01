@@ -178,13 +178,25 @@ function setupTooltips() {
   document.querySelectorAll('.tooltip-container .info-icon').forEach(icon => {
     const bubble = icon.parentElement.querySelector('.tooltip-bubble');
     if (!bubble) return;
-    icon.addEventListener('click', e => {
+
+    const toggle = (e) => {
+      e.preventDefault();
       e.stopPropagation();
+      document.querySelectorAll('.tooltip-bubble.show').forEach(b => { if (b !== bubble) b.classList.remove('show'); });
       bubble.classList.toggle('show');
+      icon.setAttribute('aria-expanded', bubble.classList.contains('show') ? 'true' : 'false');
+    };
+
+    icon.addEventListener('pointerup', toggle);
+    icon.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') toggle(e);
     });
+    bubble.addEventListener('pointerup', (e) => e.stopPropagation()); // keep open when tapping bubble
   });
-  document.addEventListener('click', () => {
+
+  document.addEventListener('pointerup', () => {
     document.querySelectorAll('.tooltip-bubble.show').forEach(b => b.classList.remove('show'));
+    document.querySelectorAll('.tooltip-container .info-icon[aria-expanded="true"]').forEach(i => i.setAttribute('aria-expanded','false'));
   });
 }
 
