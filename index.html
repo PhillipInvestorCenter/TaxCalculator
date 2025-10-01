@@ -457,11 +457,14 @@
         <!-- New deduction fields for Tax Year 2568 -->
         <div id="thaiesg_extra_container" style="display: none;">
           <label class="tooltip-container">
-            <span class="info-icon" role="button" aria-label="ข้อมูลเพิ่มเติม">i</span>
+            <span class="info-icon" role="button" tabindex="0" aria-expanded="false"
+                  aria-controls="tip_thaiesg_extra_transfer">i</span>
             กองทุนรวมไทยเพื่อความยั่งยืนแบบพิเศษ (Thai ESG Extra) สำหรับรับโอนมาจากกองทุน LTF (บาท)
             <span class="limit-label" id="thaiesg_extra_transfer_limit_label"></span>
             <span class="error" id="thaiesg_extra_transfer_error"></span>
-            <span class="tooltip-bubble">จำนวนที่นำมาคำนวณ จะต้องส่งสับเปลี่ยนระหว่างวันที่ 13 พ.ค. ถึง 31 มิ.ย. 2568 เท่านั้น</span>
+            <span class="tooltip-bubble" id="tip_thaiesg_extra_transfer">
+              จำนวนที่นำมาคำนวณ จะต้องส่งสับเปลี่ยนระหว่างวันที่ 13 พ.ค. ถึง 31 มิ.ย. 2568 เท่านั้น
+            </span>
           </label>
           <input type="text" id="thaiesg_extra_transfer" value="0" inputmode="decimal">
           <div class="info">
@@ -473,15 +476,18 @@
           </div>
 
           <label class="tooltip-container">
-            <span class="info-icon" role="button" aria-label="ข้อมูลเพิ่มเติม">i</span>
+            <span class="info-icon" role="button" tabindex="0" aria-expanded="false"
+                  aria-controls="tip_thaiesg_extra_new">i</span>
             กองทุนรวมไทยเพื่อความยั่งยืนแบบพิเศษ (Thai ESG Extra) สำหรับใช้สิทธิในปี 2568 (บาท)
             <span class="limit-label" id="thaiesg_extra_new_limit_label"></span>
             <span class="error" id="thaiesg_extra_new_error"></span>
-            <span class="tooltip-bubble">จำนวนที่นำมาคำนวณ จะต้องส่งคำสั่งซื้อระหว่างวันที่ 1 พ.ค. ถึง 31 มิ.ย. 2568 เท่านั้น</span>
+            <span class="tooltip-bubble" id="tip_thaiesg_extra_new">
+              จำนวนที่นำมาคำนวณ จะต้องส่งคำสั่งซื้อระหว่างวันที่ 1 พ.ค. ถึง 31 มิ.ย. 2568 เท่านั้น
+            </span>
           </label>
           <input type="text" id="thaiesg_extra_new" value="0" inputmode="decimal">
           <div class="info">ลดหย่อนได้ 30% ของรายได้ แต่ไม่เกิน 300,000 บาท</div>
-        </div>    
+        </div>
 
         <label>เงินลงทุนธุรกิจ Social Enterprise (บาท)
           <span class="limit-label" id="social_enterprise_limit_label"></span>
