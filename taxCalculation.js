@@ -148,6 +148,9 @@ function calculateTax() {
     let newHomeDeduction = Math.floor(newHomeVal / 1000000) * 10000;
     if (newHomeDeduction > 100000) newHomeDeduction = 100000;
     total_stimulus_deductions = easyVal + localVal + homeLoanVal + newHomeDeduction;
+    let solarVal = parseNumber(document.getElementById('solar_rooftop').value);
+    total_stimulus_deductions = easyVal + localVal + homeLoanVal + newHomeDeduction + solarVal;
+
   }
   
   // ------------------- Total Deductions and Net Income -------------------
