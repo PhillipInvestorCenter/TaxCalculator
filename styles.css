@@ -705,3 +705,5 @@ input[type="checkbox"] {
 .tooltip-top .tooltip-bubble.show{
   transform:translateY(0);
 }
+
+.new-badge.leading{margin-left:0;margin-right:6px}
