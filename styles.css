@@ -694,3 +694,14 @@ input[type="checkbox"] {
 .tooltip-container:focus-within .tooltip-bubble,
 .tooltip-bubble.show{opacity:1;visibility:visible;transform:translateY(0)}
 
+/* append: show tooltip above so it won't cover inputs */
+.tooltip-top .tooltip-bubble{
+  top:auto;
+  bottom:calc(100% + 8px);
+  transform:translateY(3px);
+}
+.tooltip-top:hover .tooltip-bubble,
+.tooltip-top:focus-within .tooltip-bubble,
+.tooltip-top .tooltip-bubble.show{
+  transform:translateY(0);
+}
