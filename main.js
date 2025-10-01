@@ -30,7 +30,8 @@ const otherDeductionFields = [
   'easy_ereceipt',
   'local_travel',
   'home_loan_interest',
-  'new_home'
+  'new_home',
+  'solar_rooftop'
 ];
 
 window.onload = function () {
@@ -50,7 +51,8 @@ window.onload = function () {
     'social_enterprise', 'nsf', 'home_loan_interest', 'donation',
     'donation_education', 'donation_political', 'easy_ereceipt',
     'local_travel', 'new_home', 'social_security',
-    'thaiesg_extra_transfer', 'thaiesg_extra_new'
+    'thaiesg_extra_transfer', 'thaiesg_extra_new',
+    'solar_rooftop'
   ];
   numberFields.forEach((id) => {
     addCommaEvent(id);
@@ -881,7 +883,7 @@ function resetPage3() {
     'social_enterprise', 'nsf', 'thaiesg_extra_transfer', 'thaiesg_extra_new',
     'donation', 'donation_education', 'donation_political',
     'easy_ereceipt', 'local_travel', 'home_loan_interest', 'new_home',
-    'social_security'
+    'social_security', 'solar_rooftop'
   ];
   deductionInputs.forEach(id => {
     const input = document.getElementById(id);
@@ -896,4 +898,3 @@ function resetPage3() {
   // do NOT hide 'thaiesg_extra_container'
 
 }
-
