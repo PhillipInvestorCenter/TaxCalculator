@@ -84,6 +84,7 @@ function getOtherDeductionLimit(fieldId) {
     case 'easy_ereceipt':            return 50000;
     case 'local_travel':             return 15000;
     case 'home_loan_interest':       return 100000;
+    case 'solar_rooftop':            return 200000;
     case 'new_home':                 return Number.MAX_VALUE;
     default:
       return Number.MAX_VALUE;
@@ -127,6 +128,9 @@ function updateDeductionLimits() {
   const newHomeLimit = 100000;
   const nsfLimit = 30000;
   const socialSecurityCap = 9000; // For Social Security
+  const solarRooftopLimit = 200000;
+  setLimitLabel('solar_rooftop', 'solar_rooftop_limit_label', solarRooftopLimit);
+
 
   setLimitLabel('pension_insurance', 'pension_insurance_limit_label', pensionInsuranceLimit);
   setLimitLabel('pvd', 'pvd_limit_label', pvdLimit);
