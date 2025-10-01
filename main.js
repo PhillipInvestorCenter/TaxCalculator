@@ -175,30 +175,52 @@ window.onload = function () {
       scrollArrow.innerHTML = "&#x2193;";
     }
 function setupTooltips() {
-  document.querySelectorAll('.tooltip-container .info-icon').forEach(icon => {
-    const bubble = icon.parentElement.querySelector('.tooltip-bubble');
+  const open = (bubble, icon) => {
+    document.querySelectorAll('.tooltip-bubble.show').forEach(b => b.classList.remove('show'));
+    bubble.classList.add('show');
+    if (icon) icon.setAttribute('aria-expanded', 'true');
+  };
+  const closeAll = () => {
+    document.querySelectorAll('.tooltip-bubble.show').forEach(b => b.classList.remove('show'));
+    document.querySelectorAll('.tooltip-container .info-icon[aria-expanded="true"]')
+      .forEach(i => i.setAttribute('aria-expanded','false'));
+  };
+
+  document.querySelectorAll('.tooltip-container').forEach(container => {
+    const icon   = container.querySelector('.info-icon');
+    const bubble = container.querySelector('.tooltip-bubble');
     if (!bubble) return;
 
-    const toggle = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      document.querySelectorAll('.tooltip-bubble.show').forEach(b => { if (b !== bubble) b.classList.remove('show'); });
-      bubble.classList.toggle('show');
-      icon.setAttribute('aria-expanded', bubble.classList.contains('show') ? 'true' : 'false');
+    // icon click/tap/keyboard
+    const toggle = e => {
+      e.preventDefault(); e.stopPropagation();
+      const show = !bubble.classList.contains('show');
+      closeAll();
+      if (show) { bubble.classList.add('show'); icon?.setAttribute('aria-expanded','true'); }
     };
+    if (icon) {
+      icon.addEventListener('pointerup', toggle);
+      icon.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') toggle(e); });
+    }
 
-    icon.addEventListener('pointerup', toggle);
-    icon.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') toggle(e);
-    });
-    bubble.addEventListener('pointerup', (e) => e.stopPropagation()); // keep open when tapping bubble
+    // input focus/blur: label.tooltip-container + input
+    const sib = container.nextElementSibling;
+    const input = sib && sib.tagName === 'INPUT' ? sib : null;
+    if (input) {
+      if (bubble.id) input.setAttribute('aria-describedby', bubble.id);
+      input.addEventListener('focus', () => open(bubble, icon));
+      input.addEventListener('blur',  () => closeAll());
+      input.addEventListener('pointerup', e => { e.stopPropagation(); open(bubble, icon); });
+    }
   });
 
-  document.addEventListener('pointerup', () => {
-    document.querySelectorAll('.tooltip-bubble.show').forEach(b => b.classList.remove('show'));
-    document.querySelectorAll('.tooltip-container .info-icon[aria-expanded="true"]').forEach(i => i.setAttribute('aria-expanded','false'));
+  // click/tap outside closes
+  document.addEventListener('pointerup', e => {
+    if (e.target.closest('.tooltip-container') || e.target.matches('label.tooltip-container + input')) return;
+    closeAll();
   });
 }
+
 
     
   });
