@@ -318,3 +318,15 @@ input[type="checkbox"]{margin-right:10px;transform:scale(1.15);cursor:pointer}
 
 /* prevent chevron from wrapping the line */
 .chevron{ flex-shrink:0; }
+
+/* High-contrast chevron */
+.chevron{
+  color:#1f2937;                 /* arrow color */
+  background:rgba(31,41,55,.08); /* subtle circle */
+  border-radius:999px;
+  box-shadow:0 1px 0 rgba(0,0,0,.04);
+}
+.chevron:hover{ background:rgba(31,41,55,.12); }
+.chevron:active{ background:rgba(31,41,55,.16); }
+.chevron.open{ color:#2563eb; }  /* arrow color when opened */
+.chevron svg, .chevron svg path{ stroke:currentColor; }
