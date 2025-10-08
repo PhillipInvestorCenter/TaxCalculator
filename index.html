@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -592,8 +593,32 @@
           <div class="receipt-value" id="result_expense">0</div>
         </div>
         <div class="receipt-row">
-          <div class="receipt-label">ค่าลดหย่อนทั้งหมด</div>
+          <div class="receipt-label">
+            ค่าลดหย่อนทั้งหมด
+            <button type="button"
+                    id="toggle_deduction_breakdown"
+                    class="chevron"
+                    aria-expanded="false"
+                    aria-controls="deduction_breakdown"
+                    aria-label="แสดง/ซ่อนรายละเอียด">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </button>
+          </div>
           <div class="receipt-value" id="result_deductions">0</div>
+        </div>
+
+        <!-- hidden breakdown -->
+        <div id="deduction_breakdown" class="collapse" style="display:none;">
+          <div class="receipt-sublist">
+            <div class="receipt-subheading">ค่าใช้จ่าย</div>
+            <div id="breakdown_expense" class="mini-list"></div>
+            <div class="receipt-subheading">ค่าลดหย่อน</div>
+            <div id="breakdown_deductions" class="mini-list"></div>
+          </div>
         </div>
         
         <hr>
@@ -619,11 +644,8 @@
         <hr>
 
         <!-- 4) สรุปภาษีสุทธิ (ต้องจ่ายจริง, ขอคืน, หรือ 0) -->
-        <!-- We'll keep tax_due_real and tax_credit_refund in one row for alignment. -->
         <div class="receipt-row" style="margin-bottom: 5px;">
-          <!-- Left side: “ภาษีที่ต้องชำระจริง” or “ดีใจด้วย...” -->
           <div class="receipt-label" id="tax_due_real"></div>
-          <!-- Right side: “ต้องขอเครดิตคืน” -->
           <div class="receipt-value" id="tax_credit_refund"></div>
         </div>
         <div id="tax_summary" style="display: none;"></div>
@@ -693,6 +715,7 @@
   <script src="deductions.js"></script>
   <script src="taxCalculation.js"></script>
   <script src="investment.js"></script>
+  <script src="flow.js"></script>
   <script src="main.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </body>
