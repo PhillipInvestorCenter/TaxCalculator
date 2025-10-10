@@ -502,4 +502,7 @@ function calculateTax() {
   isTaxCalculated = true;
   setActiveStep(4);
   showStep(4);
+
+  try { if (typeof postLog === 'function') postLog(); } catch(_){}
+
 }
