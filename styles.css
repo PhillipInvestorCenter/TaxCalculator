@@ -330,3 +330,112 @@ input[type="checkbox"]{margin-right:10px;transform:scale(1.15);cursor:pointer}
 .chevron:active{ background:rgba(31,41,55,.16); }
 .chevron.open{ color:#2563eb; }  /* arrow color when opened */
 .chevron svg, .chevron svg path{ stroke:currentColor; }
+
+/* --- iOS liquid glass stepper --- */
+.stepper--ios{
+  position:relative; height:68px; padding:8px;
+  border-radius:999px; background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.18);
+  backdrop-filter:blur(8px) saturate(130%);
+  -webkit-backdrop-filter:blur(8px) saturate(130%);
+}
+.stepper--ios .stepper-step{
+  background:transparent !important; text-shadow:none;
+  color:#e5e7eb; font-weight:700;
+}
+.stepper--ios .stepper-step.active .stepper-step-label{ color:#8ab4ff; }
+
+.liquid-lens{
+  position:absolute; top:50%; left:0; width:140px; height:56px;
+  transform:translate(0,-50%); border-radius:999px; pointer-events:none;
+  transition:transform .24s cubic-bezier(.22,.61,.36,1);
+  backdrop-filter:blur(12px) saturate(180%) brightness(1.15);
+  -webkit-backdrop-filter:blur(12px) saturate(180%) brightness(1.15);
+  background:
+    radial-gradient(120px 60px at 50% 18%, rgba(255,255,255,.25), rgba(255,255,255,0) 70%),
+    radial-gradient(120px 60px at 50% 82%, rgba(255,255,255,.18), rgba(255,255,255,0) 70%),
+    linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+  border:1px solid rgba(255,255,255,.38);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35), 0 8px 24px rgba(0,0,0,.28);
+  overflow:hidden;
+}
+.liquid-lens::after{
+  content:""; position:absolute; inset:-35% -35%;
+  background:
+    radial-gradient(110px 44px at 50% 0%, rgba(255,60,60,.25), transparent 60%),
+    radial-gradient(110px 44px at 50% 100%, rgba(60,160,255,.25), transparent 60%);
+  mix-blend-mode:screen; opacity:.35;
+}
+
+/* --- Improve visibility + remove rectangular active box --- */
+.stepper--ios{
+  background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.06));
+  border:1px solid rgba(255,255,255,.28);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 8px 24px rgba(2,6,23,.18);
+}
+
+/* kill any background/box-shadow from the old step styles */
+.stepper--ios .stepper-step,
+.stepper--ios .stepper-step.active,
+.stepper--ios .stepper-step.completed{
+  background:transparent !important;
+  box-shadow:none !important;
+}
+.stepper--ios .stepper-step:focus,
+.stepper--ios .stepper-step:focus-visible{
+  outline:0 !important;
+  box-shadow:none !important;
+}
+
+/* clearer labels */
+.stepper--ios .stepper-step-label{ color:rgba(255,255,255,.72); font-weight:700; }
+.stepper--ios .stepper-step:hover .stepper-step-label{ color:#b9d6ff; }
+.stepper--ios .stepper-step.active .stepper-step-label{
+  color:#60a5fa; text-shadow:0 1px 0 rgba(0,0,0,.35); font-weight:800;
+}
+
+/* brighter lens for easy sight */
+.liquid-lens{
+  z-index:2;
+  width:156px; height:56px;
+  border:1.5px solid rgba(255,255,255,.55);
+  backdrop-filter:blur(16px) saturate(190%) brightness(1.2);
+  -webkit-backdrop-filter:blur(16px) saturate(190%) brightness(1.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6), 0 12px 28px rgba(2,6,23,.35);
+  background:
+    radial-gradient(160px 70px at 50% 16%, rgba(255,255,255,.28), rgba(255,255,255,0) 70%),
+    radial-gradient(160px 70px at 50% 84%, rgba(255,255,255,.22), rgba(255,255,255,0) 70%),
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+}
+.liquid-lens::before{
+  content:""; position:absolute; inset:-40% -40%;
+  background:
+    radial-gradient(220px 90px at 50% -10%, rgba(120,190,255,.35), transparent 60%),
+    radial-gradient(220px 90px at 50% 110%, rgba(120,190,255,.22), transparent 60%);
+  mix-blend-mode:screen; opacity:.5;
+}
+.liquid-lens::after{
+  content:""; position:absolute; inset:0; border-radius:inherit;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35);
+}
+
+/* --- Step text readability --- */
+.stepper--ios .stepper-step{ position:relative; z-index:3 }  /* text above lens */
+.liquid-lens{ z-index:1; mix-blend-mode:normal }            /* lens below text */
+
+.stepper--ios .stepper-step-label{
+  color:#1f2a44;              /* dark on light glass */
+  font-weight:800;
+  letter-spacing:.2px;
+  text-shadow:0 1px 2px rgba(0,0,0,.25);
+  font-size:1.02rem;
+}
+@media (max-width:768px){
+  .stepper--ios .stepper-step-label{ font-size:.95rem }
+}
+
+.stepper--ios .stepper-step.active .stepper-step-label{
+  color:#0b57d0;              /* high-contrast active */
+  text-shadow:0 1px 3px rgba(0,0,0,.30);
+}
+.stepper--ios .stepper-step:hover .stepper-step-label{ color:#1849a9 }
