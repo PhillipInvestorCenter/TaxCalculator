@@ -444,3 +444,13 @@ input[type="checkbox"]{margin-right:10px;transform:scale(1.15);cursor:pointer}
 @media (max-width:480px){
   .liquid-lens{ height:42px; }
 }
+
+.landing-page .app-version{
+  margin-top:8px;
+  font-size:12px;
+  color:#6b7280;      /* muted gray */
+  font-weight:400;
+  opacity:.85;
+  text-align:center;
+  user-select:none;
+}
