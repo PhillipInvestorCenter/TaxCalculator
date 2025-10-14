@@ -8,6 +8,7 @@ let total_withholding_tax = 0;
 let isTaxCalculated = false;
 let selectedTaxYear = 2568;
 let socialSecurityManual = false;
+let maxVisitedStep = 1;
 
 let rev1_amt = 0, rev2_amt = 0, rev3_amt = 0, rev4_amt = 0, rev5_amt = 0, rev6_amt = 0, rev7_amt = 0, rev8_amt = 0;
 
@@ -17,6 +18,13 @@ const otherDeductionFields = [
   'social_enterprise','donation_political','easy_ereceipt','local_travel',
   'home_loan_interest','new_home','solar_rooftop'
 ];
+
+/* ---- Navigation gate ---- */
+function canNavigateToStep(target){
+  if (isTaxCalculated) return true;
+  const cap = Math.min(3, Math.max(1, maxVisitedStep || 1));
+  return target <= cap;
+}
 
 /* ---- Init ---- */
 window.onload = function () {
@@ -93,24 +101,35 @@ window.onload = function () {
     if (e){ addCommaEvent(id); e.addEventListener('input', ()=>handleOtherDeductionFieldChange(id)); }
   });
 
-  // stepper gating
-  const stepper = document.getElementById('stepper');
-  if (stepper) stepper.classList.add('locked');
-  document.querySelectorAll('.stepper .stepper-step').forEach(st=>{
-    st.addEventListener('click', function(e){
-      const target = parseInt(this.getAttribute('data-step'),10);
-      const current = parseInt(document.querySelector('.stepper .stepper-step.active').getAttribute('data-step'),10);
-      if (!isTaxCalculated && target !== current){
+  // stepper click delegation with gate
+  const stepBar = document.getElementById('stepper');
+  if (stepBar){
+    stepBar.addEventListener('click', function(e){
+      const node = e.target.closest('.stepper-step');
+      if (!node) return;
+      const target = parseInt(node.getAttribute('data-step'),10);
+      if (canNavigateToStep(target)) {
+        navigateToStep(target);
+      } else {
         e.preventDefault();
-        const t = document.getElementById('tc-toast');
-        if (t){ t.remove(); }
-        const msg = 'โปรดใช้ปุ่ม "ถัดไป"';
-        const evtToast = new CustomEvent('tc_toast', { detail: msg });
-        document.dispatchEvent(evtToast);
+        const cur = parseInt(stepBar.getAttribute('data-current-step')||'1',10);
+        if (typeof moveLensToStep==='function') moveLensToStep(cur);
+        document.dispatchEvent(new CustomEvent('tc_toast',{detail:'โปรดใช้ปุ่ม "ถัดไป"'}));
       }
-      if (isTaxCalculated) navigateToStep(target);
     });
-  });
+  }
+
+  // track visited cap via observer
+  if (stepBar){
+    const obs = new MutationObserver(()=>{
+      const n = parseInt(stepBar.getAttribute('data-current-step')||'1',10);
+      if (!isTaxCalculated && n < 4){
+        maxVisitedStep = Math.max(maxVisitedStep||1, Math.min(3, n));
+      }
+    });
+    obs.observe(stepBar, { attributes:true, attributeFilter:['data-current-step'] });
+  }
+
   // toast proxy
   document.addEventListener('tc_toast', e=>{
     const d = e.detail || 'ดำเนินการต่อ';
@@ -136,13 +155,16 @@ window.onload = function () {
     });
   }
 
-  populateChildrenOptions();
+  if (typeof initLiquidStepper === 'function') initLiquidStepper();
 
+  populateChildrenOptions();
 };
 
 /* ---- Start + Reset ---- */
 function startCalculator() {
   selectedTaxYear = 2568;
+  maxVisitedStep = 1;
+  isTaxCalculated = false;
 
   const ssfC = document.getElementById('ssf_container');
   if (ssfC) ssfC.style.display = 'none';
@@ -159,13 +181,10 @@ function startCalculator() {
   document.getElementById('main-container').style.display = 'block';
   setActiveStep(1);
   window.scrollTo({ top:0, behavior:'smooth' });
-
-  isTaxCalculated = false;
-  document.getElementById('stepper')?.classList.add('locked');
 }
 
 function resetData() {
-  total_income = 0; monthly_income = 0; expense = 0; total_withholding_tax = 0; isTaxCalculated = false; socialSecurityManual = false;
+  total_income = 0; monthly_income = 0; expense = 0; total_withholding_tax = 0; isTaxCalculated = false; socialSecurityManual = false; maxVisitedStep = 1;
 
   document.querySelectorAll('input[type="text"]').forEach(i=>i.value='0');
   document.querySelectorAll('input[type="checkbox"]').forEach(c=>{ c.checked=false; c.dispatchEvent(new Event('change')); });
@@ -197,7 +216,6 @@ function resetData() {
 
   window.scrollTo({ top:0, behavior:'smooth' });
   updateDeductionLimits();
-  document.getElementById('stepper')?.classList.add('locked');
 }
 
 function resetPage1() {
