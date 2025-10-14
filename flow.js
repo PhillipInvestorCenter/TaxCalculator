@@ -26,13 +26,27 @@
     if (!bar) return;
     bar.classList.add('stepper--ios');
 
+    function lensWidthFor() {
+      const steps = bar.querySelectorAll('.stepper-step').length || 4;
+      const slot = (bar.clientWidth || window.innerWidth) / steps;
+      const w = slot * 0.72;              // occupy ~72% of a step slot
+      return Math.max(56, Math.min(w, 160)); // clamp for phones and desktops
+    }
+
     _lens = bar.querySelector('.liquid-lens');
     if (!_lens) {
       _lens = document.createElement('div');
       _lens.className = 'liquid-lens';
       bar.appendChild(_lens);
     }
+    _lens.style.width = lensWidthFor() + 'px';
     moveLensToStep(getCurrentStep());
+
+    // keep width correct on rotate/resize
+    window.addEventListener('resize', () => {
+      _lens.style.width = lensWidthFor() + 'px';
+      moveLensToStep(getCurrentStep());
+    });
 
     bar.addEventListener('pointerdown', onDown);
     bar.addEventListener('pointermove', onMove);
@@ -48,16 +62,14 @@
       if (!_drag) return;
       const r = bar.getBoundingClientRect();
       const x = Math.min(Math.max(e.clientX - r.left, 0), r.width);
-      const w = _lens.offsetWidth || 140;
+      const w = _lens.offsetWidth || 120;
       _lens.style.transform = `translate(${x - w / 2}px,-50%)`;
     }
-    // inside initLiquidStepper() -> onUp handler
-    function onUp(e){
+    function onUp(e) {
       if (!_drag) return;
       _drag = false;
       const idx = nearestStepIndex(bar, e.clientX);
       const cur = getCurrentStep();
-
       if (typeof canNavigateToStep==='function' ? canNavigateToStep(idx) : idx <= (window.maxVisitedStep||1)){
         navigateToStep(idx);
       } else {
@@ -66,6 +78,7 @@
       }
     }
   }
+
 
   function nearestStepIndex(bar, clientX) {
     const steps = Array.from(bar.querySelectorAll('.stepper-step'));
