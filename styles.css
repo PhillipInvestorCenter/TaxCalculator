@@ -439,3 +439,8 @@ input[type="checkbox"]{margin-right:10px;transform:scale(1.15);cursor:pointer}
   text-shadow:0 1px 3px rgba(0,0,0,.30);
 }
 .stepper--ios .stepper-step:hover .stepper-step-label{ color:#1849a9 }
+
+.liquid-lens{ height:46px; border-radius:999px; }
+@media (max-width:480px){
+  .liquid-lens{ height:42px; }
+}
