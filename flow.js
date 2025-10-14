@@ -1,6 +1,5 @@
-/* flow.js – move ~half of main.js here, keep same globals and behavior */
+/* flow.js – liquid glass stepper + flow controls */
 (function (global) {
-  // private toast (no alert)
   function toast(msg) {
     let el = document.getElementById('tc-toast');
     if (!el) {
@@ -19,7 +18,86 @@
     el._t = setTimeout(() => (el.style.opacity = '0'), 1400);
   }
 
-  /* ---- Revenue type toggles ---- */
+  /* ---------- Liquid glass stepper ---------- */
+  let _lens = null, _drag = false;
+
+  function initLiquidStepper() {
+    const bar = document.getElementById('stepper');
+    if (!bar) return;
+    bar.classList.add('stepper--ios');
+
+    _lens = bar.querySelector('.liquid-lens');
+    if (!_lens) {
+      _lens = document.createElement('div');
+      _lens.className = 'liquid-lens';
+      bar.appendChild(_lens);
+    }
+    moveLensToStep(getCurrentStep());
+
+    bar.addEventListener('pointerdown', onDown);
+    bar.addEventListener('pointermove', onMove);
+    bar.addEventListener('pointerup', onUp);
+    bar.addEventListener('pointercancel', () => (_drag = false));
+
+    function onDown(e) {
+      _drag = true;
+      bar.setPointerCapture?.(e.pointerId);
+      onMove(e);
+    }
+    function onMove(e) {
+      if (!_drag) return;
+      const r = bar.getBoundingClientRect();
+      const x = Math.min(Math.max(e.clientX - r.left, 0), r.width);
+      const w = _lens.offsetWidth || 140;
+      _lens.style.transform = `translate(${x - w / 2}px,-50%)`;
+    }
+    // inside initLiquidStepper() -> onUp handler
+    function onUp(e){
+      if (!_drag) return;
+      _drag = false;
+      const idx = nearestStepIndex(bar, e.clientX);
+      const cur = getCurrentStep();
+
+      if (typeof canNavigateToStep==='function' ? canNavigateToStep(idx) : idx <= (window.maxVisitedStep||1)){
+        navigateToStep(idx);
+      } else {
+        toast('โปรดใช้ปุ่ม "ถัดไป"');
+        moveLensToStep(cur);
+      }
+    }
+  }
+
+  function nearestStepIndex(bar, clientX) {
+    const steps = Array.from(bar.querySelectorAll('.stepper-step'));
+    let best = 1, bd = Infinity;
+    steps.forEach((el, i) => {
+      const r = el.getBoundingClientRect();
+      const c = r.left + r.width / 2;
+      const d = Math.abs(clientX - c);
+      if (d < bd) { bd = d; best = i + 1; }
+    });
+    return best;
+  }
+
+  function getCurrentStep() {
+    const bar = document.getElementById('stepper');
+    const n = parseInt(bar?.getAttribute('data-current-step'), 10) || 1;
+    return Math.max(1, Math.min(4, n));
+  }
+
+  function moveLensToStep(n) {
+    const bar = document.getElementById('stepper');
+    if (!_lens || !bar) return;
+    const el = bar.querySelector(`.stepper-step[data-step="${n}"]`);
+    if (!el) return;
+    const rBar = bar.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    const cx = (r.left + r.width / 2) - rBar.left;
+    const w = _lens.offsetWidth || 140;
+    _lens.style.transform = `translate(${cx - w / 2}px,-50%)`;
+  }
+
+  /* ---------- Revenue toggles ---------- */
   function setupRevenueTypeListeners() {
     const blocks = [
       ['rev_type_1','rev_type_1_input'],['rev_type_2','rev_type_2_input'],
@@ -73,7 +151,7 @@
     });
   }
 
-  /* ---- Navigation helpers ---- */
+  /* ---------- Navigation ---------- */
   function showStep(n){ navigateToStep(n); }
 
   function navigateToStep(n) {
@@ -86,7 +164,7 @@
 
   function setActiveStep(n) {
     const stepper = document.getElementById('stepper');
-    stepper.setAttribute('data-current-step', n);
+    stepper?.setAttribute('data-current-step', n);
     document.querySelectorAll('.stepper .stepper-step').forEach(el=>{
       const k = parseInt(el.getAttribute('data-step'),10);
       if (k < n){ el.classList.add('completed'); el.classList.remove('active'); }
@@ -94,11 +172,12 @@
       else { el.classList.remove('active','completed'); }
     });
     if (n === 4){ document.getElementById('stepper')?.classList.remove('locked'); isTaxCalculated = true; }
-    document.getElementById('resetButtonStep1').style.display = (n===1)?'block':'none';
-    document.getElementById('resetButtonStep3').style.display = (n===3)?'block':'none';
+    const r1 = document.getElementById('resetButtonStep1'); if (r1) r1.style.display = (n===1)?'block':'none';
+    const r3 = document.getElementById('resetButtonStep3'); if (r3) r3.style.display = (n===3)?'block':'none';
+    moveLensToStep(n);
   }
 
-  /* ---- Validation + Next/Prev ---- */
+  /* ---------- Validation + Next/Prev ---------- */
   function validateStep(n) {
     if (n !== 1) return true;
     let ok = false;
@@ -278,15 +357,15 @@
       recalcExpenses();
       setActiveStep(2);
       showStep(2);
-      updateDeductionLimits();
+      if (typeof updateDeductionLimits === 'function') updateDeductionLimits();
     } else if (cur === 2) {
       setActiveStep(3);
       showStep(3);
-      updateDeductionLimits();
+      if (typeof updateDeductionLimits === 'function') updateDeductionLimits();
     }
   }
 
-  /* ---- Expense recompute (Step 2) ---- */
+  /* ---------- Expense recompute (Step 2) ---------- */
   function recalcExpenses() {
     const mul = (document.getElementById('calc_mode').value === 'month') ? 12 : 1;
     let e12 = Math.min((rev1_amt + rev2_amt) * 0.5, 100000);
@@ -349,7 +428,7 @@
     document.getElementById('expense_display').innerText = formatNumber(expense);
   }
 
-  // expose
+  /* expose */
   global.setupRevenueTypeListeners = setupRevenueTypeListeners;
   global.navigateToStep = navigateToStep;
   global.showStep = showStep;
@@ -358,4 +437,6 @@
   global.prevStep = prevStep;
   global.nextStep = nextStep;
   global.recalcExpenses = recalcExpenses;
+  global.initLiquidStepper = initLiquidStepper;
+  global.moveLensToStep = moveLensToStep;
 })(window);
