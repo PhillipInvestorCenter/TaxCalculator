@@ -457,7 +457,7 @@ input[type="checkbox"]{margin-right:10px;transform:scale(1.15);cursor:pointer}
 
 /* Waterfall chart card */
 .chart-card{
-  margin:0 auto 18px; padding:16px;
+  margin:24px auto 18px; padding:16px;
   border-radius:14px; background:var(--glass-bg);
   border:1px solid var(--glass-border); box-shadow:var(--glass-shadow);
   backdrop-filter:blur(10px)
@@ -474,4 +474,5 @@ input[type="checkbox"]{margin-right:10px;transform:scale(1.15);cursor:pointer}
 @media (min-width:1024px){
   .chart-card canvas{ height:560px !important; }
 }
+
 @media print{ .chart-card{ display:none } } /* ไม่พิมพ์กราฟ */
