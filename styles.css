@@ -454,3 +454,24 @@ input[type="checkbox"]{margin-right:10px;transform:scale(1.15);cursor:pointer}
   text-align:center;
   user-select:none;
 }
+
+/* Waterfall chart card */
+.chart-card{
+  margin:0 auto 18px; padding:16px;
+  border-radius:14px; background:var(--glass-bg);
+  border:1px solid var(--glass-border); box-shadow:var(--glass-shadow);
+  backdrop-filter:blur(10px)
+}
+.chart-card h3{ margin:0 0 10px; font-size:1.15rem; color:#1d2b53 }
+.chart-card canvas{ width:100% !important; height:480px !important; }
+
+/* Mobile tweak */
+@media (max-width:480px){
+  .chart-card canvas{ height:400px !important; }
+}
+
+/* Large screens */
+@media (min-width:1024px){
+  .chart-card canvas{ height:560px !important; }
+}
+@media print{ .chart-card{ display:none } } /* ไม่พิมพ์กราฟ */
