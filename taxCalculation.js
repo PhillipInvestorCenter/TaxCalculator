@@ -2,71 +2,47 @@
 
 // -------- Withholding Tax Total --------
 function calculateTotalWithholdingTax() {
-  // 12 for "รายเดือน", 1 for "รายปี"
   const calcMode = document.getElementById('calc_mode').value;
-  const multiplier = (calcMode === 'month') ? 12 : 1;
+  const m = (calcMode === 'month') ? 12 : 1;
 
-  const w1 = document.getElementById('rev_type_1').checked &&
-             document.getElementById('rev1_withholding_checkbox').checked
-             ? parseNumber(document.getElementById('rev1_withholding_input').value) * multiplier : 0;
-  const w2 = document.getElementById('rev_type_2').checked &&
-             document.getElementById('rev2_withholding_checkbox').checked
-             ? parseNumber(document.getElementById('rev2_withholding_input').value) * multiplier : 0;
-  const w3 = document.getElementById('rev_type_3').checked &&
-             document.getElementById('rev3_withholding_checkbox').checked
-             ? parseNumber(document.getElementById('rev3_withholding_input').value) * multiplier : 0;
-  const w4 = document.getElementById('rev_type_4').checked &&
-             document.getElementById('rev4_withholding_checkbox').checked
-             ? parseNumber(document.getElementById('rev4_withholding_input').value) * multiplier : 0;
-  const w5 = document.getElementById('rev_type_5').checked &&
-             document.getElementById('rev5_withholding_checkbox').checked
-             ? parseNumber(document.getElementById('rev5_withholding_input').value) * multiplier : 0;
-  const w6 = document.getElementById('rev_type_6').checked &&
-             document.getElementById('rev6_withholding_checkbox').checked
-             ? parseNumber(document.getElementById('rev6_withholding_input').value) * multiplier : 0;
-  const w7 = document.getElementById('rev_type_7').checked &&
-             document.getElementById('rev7_withholding_checkbox').checked
-             ? parseNumber(document.getElementById('rev7_withholding_input').value) * multiplier : 0;
-  const w8 = document.getElementById('rev_type_8').checked &&
-             document.getElementById('rev8_withholding_checkbox').checked
-             ? parseNumber(document.getElementById('rev8_withholding_input').value) * multiplier : 0;
+  const w1 = document.getElementById('rev_type_1').checked && document.getElementById('rev1_withholding_checkbox').checked ? parseNumber(document.getElementById('rev1_withholding_input').value) * m : 0;
+  const w2 = document.getElementById('rev_type_2').checked && document.getElementById('rev2_withholding_checkbox').checked ? parseNumber(document.getElementById('rev2_withholding_input').value) * m : 0;
+  const w3 = document.getElementById('rev_type_3').checked && document.getElementById('rev3_withholding_checkbox').checked ? parseNumber(document.getElementById('rev3_withholding_input').value) * m : 0;
+  const w4 = document.getElementById('rev_type_4').checked && document.getElementById('rev4_withholding_checkbox').checked ? parseNumber(document.getElementById('rev4_withholding_input').value) * m : 0;
+  const w5 = document.getElementById('rev_type_5').checked && document.getElementById('rev5_withholding_checkbox').checked ? parseNumber(document.getElementById('rev5_withholding_input').value) * m : 0;
+  const w6 = document.getElementById('rev_type_6').checked && document.getElementById('rev6_withholding_checkbox').checked ? parseNumber(document.getElementById('rev6_withholding_input').value) * m : 0;
+  const w7 = document.getElementById('rev_type_7').checked && document.getElementById('rev7_withholding_checkbox').checked ? parseNumber(document.getElementById('rev7_withholding_input').value) * m : 0;
+  const w8 = document.getElementById('rev_type_8').checked && document.getElementById('rev8_withholding_checkbox').checked ? parseNumber(document.getElementById('rev8_withholding_input').value) * m : 0;
 
   return w1 + w2 + w3 + w4 + w5 + w6 + w7 + w8;
 }
 
-// -------- Social Security (auto when not manual) --------
+// -------- Social Security (auto unless manual) --------
 function calculateSocialSecurity() {
   if (document.getElementById('has_social_security').checked) {
     if (!socialSecurityManual) {
-      let monthly_contribution = monthly_income * 0.05;
-      monthly_contribution = Math.min(monthly_contribution, 750);
-      let social_security = monthly_contribution * 12;
-      social_security = Math.min(social_security, 9000);
-      document.getElementById('social_security').value = formatNumber(social_security);
+      let monthly = monthly_income * 0.05;
+      monthly = Math.min(monthly, 750);
+      let ss = monthly * 12;
+      ss = Math.min(ss, 9000);
+      document.getElementById('social_security').value = formatNumber(ss);
     }
   } else {
     document.getElementById('social_security').value = '0';
     socialSecurityManual = false;
   }
-  if (typeof updateDeductionLimits === 'function') {
-    updateDeductionLimits();
-  }
+  if (typeof updateDeductionLimits === 'function') updateDeductionLimits();
 }
 
-/* ============================================
-   Breakdown helpers for Result Page
-   ============================================ */
+/* ========================= Helpers for breakdown ========================= */
 
-// Build expense items from Step 2 selections
 function computeExpenseBreakdown() {
   const mul = (document.getElementById('calc_mode').value === 'month') ? 12 : 1;
   const items = [];
 
-  // ประเภท 1–2: 50% รวมกัน แต่ไม่เกิน 100,000
   const e12 = Math.min((rev1_amt + rev2_amt) * 0.5, 100000);
   if (e12 > 0) items.push(['ประเภท 1–2 (หักเหมา)', e12]);
 
-  // ประเภท 3
   if (document.getElementById('rev_type_3').checked) {
     const c3 = document.querySelector('input[name="expense_choice_3"]:checked');
     const e3 = (c3 && c3.value === 'actual')
@@ -75,7 +51,6 @@ function computeExpenseBreakdown() {
     if (e3 > 0) items.push(['ประเภท 3 (' + ((c3 && c3.value === 'actual') ? 'ตามจริง' : 'หักเหมา') + ')', e3]);
   }
 
-  // ประเภท 5
   if (document.getElementById('rev_type_5').checked) {
     const c5 = document.querySelector('input[name="expense_choice_5"]:checked');
     let e5 = 0;
@@ -91,7 +66,6 @@ function computeExpenseBreakdown() {
     if (e5 > 0) items.push(['ประเภท 5 (' + ((c5 && c5.value === 'actual') ? 'ตามจริง' : 'หักเหมา') + ')', e5]);
   }
 
-  // ประเภท 6
   if (document.getElementById('rev_type_6').checked) {
     const c6 = document.querySelector('input[name="expense_choice_6"]:checked');
     let e6 = 0;
@@ -104,7 +78,6 @@ function computeExpenseBreakdown() {
     if (e6 > 0) items.push(['ประเภท 6 (' + ((c6 && c6.value === 'actual') ? 'ตามจริง' : 'หักเหมา') + ')', e6]);
   }
 
-  // ประเภท 7
   if (document.getElementById('rev_type_7').checked) {
     const c7 = document.querySelector('input[name="expense_choice_7"]:checked');
     const base7 = parseNumber(document.getElementById('rev7_amount')?.value) || 0;
@@ -114,7 +87,6 @@ function computeExpenseBreakdown() {
     if (e7 > 0) items.push(['ประเภท 7 (' + ((c7 && c7.value === 'actual') ? 'ตามจริง' : 'หักเหมา') + ')', e7]);
   }
 
-  // ประเภท 8
   if (document.getElementById('rev_type_8').checked) {
     const c8 = document.querySelector('input[name="expense_choice_8"]:checked');
     let e8 = 0;
@@ -131,10 +103,8 @@ function computeExpenseBreakdown() {
   return items;
 }
 
-// Build deduction items from Step 3 inputs already clamped
 function buildDeductionItemsUsed(ctx) {
   const items = [];
-  // ส่วนบุคคล
   if (ctx.personal_allowance > 0) items.push(['ส่วนตัว', ctx.personal_allowance]);
   if (ctx.spouse_allowance > 0) items.push(['คู่สมรสไม่มีรายได้', ctx.spouse_allowance]);
   if (ctx.child_allowance > 0) items.push(['บุตร', ctx.child_allowance]);
@@ -142,32 +112,31 @@ function buildDeductionItemsUsed(ctx) {
   if (ctx.disabled_allowance > 0) items.push(['ผู้พิการ/ทุพพลภาพ', ctx.disabled_allowance]);
   if (ctx.social_security > 0) items.push(['ประกันสังคม', ctx.social_security]);
 
-  // ประกัน/การออม/ลงทุน
   if (ctx.life_val > 0) items.push(['ประกันชีวิต', ctx.life_val]);
   if (ctx.health_val > 0) items.push(['ประกันสุขภาพ', ctx.health_val]);
   if (ctx.parent_health_val > 0) items.push(['ประกันสุขภาพบิดามารดา', ctx.parent_health_val]);
+
   if (ctx.pensionVal > 0) items.push(['ประกันชีวิตแบบบำนาญ', ctx.pensionVal]);
   if (ctx.pvdVal > 0) items.push(['PVD', ctx.pvdVal]);
   if (ctx.gpfVal > 0) items.push(['กบข.', ctx.gpfVal]);
   if (ctx.rmfVal > 0) items.push(['RMF', ctx.rmfVal]);
   if (ctx.nsfVal > 0) items.push(['กอช.', ctx.nsfVal]);
+
   if (ctx.thaiesgVal > 0) items.push(['Thai ESG', ctx.thaiesgVal]);
   if (ctx.thaiesgExtraTransferVal > 0) items.push(['Thai ESG Extra (โอน LTF)', ctx.thaiesgExtraTransferVal]);
   if (ctx.thaiesgExtraNewVal > 0) items.push(['Thai ESG Extra (ซื้อปี 2568)', ctx.thaiesgExtraNewVal]);
+
   if (ctx.socialEntVal > 0) items.push(['ลงทุน Social Enterprise', ctx.socialEntVal]);
 
-  // บริจาค
   if (ctx.total_donation_deductions > 0) {
-    if (ctx.donation_capped) {
-      items.push(['บริจาค (ตามเพดาน 10%)', ctx.total_donation_deductions]);
-    } else {
+    if (ctx.donation_capped) items.push(['บริจาค (ตามเพดาน 10%)', ctx.total_donation_deductions]);
+    else {
       if (ctx.donationVal > 0) items.push(['บริจาคทั่วไป', ctx.donationVal]);
       if (ctx.donationEdu2x > 0) items.push(['บริจาคเพื่อการศึกษา (x2)', ctx.donationEdu2x]);
       if (ctx.donationPolit > 0) items.push(['บริจาคพรรคการเมือง', ctx.donationPolit]);
     }
   }
 
-  // มาตรการกระตุ้น
   if (ctx.easyVal > 0) items.push(['Easy e-Receipt', ctx.easyVal]);
   if (ctx.localVal > 0) items.push(['เที่ยวเมืองรอง', ctx.localVal]);
   if (ctx.homeLoanVal > 0) items.push(['ดอกเบี้ยกู้ซื้อที่อยู่อาศัย', ctx.homeLoanVal]);
@@ -177,7 +146,6 @@ function buildDeductionItemsUsed(ctx) {
   return items;
 }
 
-// Inject lists into result page
 function renderDeductionBreakdown(expenseItems, deductionItems) {
   const expBox = document.getElementById('breakdown_expense');
   const dedBox = document.getElementById('breakdown_deductions');
@@ -193,34 +161,24 @@ function renderDeductionBreakdown(expenseItems, deductionItems) {
     ).join('') || '<div class="mini-row"><div class="mini-label">ไม่มี</div><div class="mini-value">0</div></div>';
   }
 
-  // Close panel by default whenever recalculated
-  const tgl = document.getElementById('toggle_deduction_breakdown');
-  const panel = document.getElementById('deduction_breakdown');
-  if (tgl && panel) {
-    tgl.classList.remove('open');
-    tgl.setAttribute('aria-expanded', 'false');
-    panel.style.display = 'none';
-  }
+  const t = document.getElementById('toggle_deduction_breakdown');
+  const p = document.getElementById('deduction_breakdown');
+  if (t && p) { t.classList.remove('open'); t.setAttribute('aria-expanded', 'false'); p.style.display = 'none'; }
 }
 
-/* ============================================
-   Main Calculation
-   ============================================ */
+/* =============================== Main calc =============================== */
 
 function calculateTax() {
-  // Clear error messages
   document.querySelectorAll('.error').forEach((el) => (el.innerText = ''));
 
-  // ------------------- Personal Deductions -------------------
   const personal_allowance = 60000;
   const spouse = document.getElementById('spouse').value;
   let spouse_allowance = (spouse === 'yes') ? 60000 : 0;
 
   const children_own = parseInt(document.getElementById('children_own').value) || 0;
   let child_allowance = 0;
-  for (let i = 1; i <= children_own; i++) {
-    child_allowance += (i === 1) ? 30000 : 60000;
-  }
+  for (let i = 1; i <= children_own; i++) child_allowance += (i === 1) ? 30000 : 60000;
+
   let children_adopted = parseInt(document.getElementById('children_adopted').value) || 0;
   if (children_adopted > 3) children_adopted = 3;
   child_allowance += children_adopted * 30000;
@@ -236,15 +194,12 @@ function calculateTax() {
   const disabled_allowance = disabled_persons * 60000;
 
   let social_security = 0;
-  if (document.getElementById('has_social_security').checked) {
-    social_security = parseNumber(document.getElementById('social_security').value);
-  }
+  if (document.getElementById('has_social_security').checked) social_security = parseNumber(document.getElementById('social_security').value);
 
   const total_personal_deductions =
-    personal_allowance + spouse_allowance + child_allowance +
-    parents_allowance + disabled_allowance + social_security;
+    personal_allowance + spouse_allowance + child_allowance + parents_allowance + disabled_allowance + social_security;
 
-  // ------------------- Insurance / Investment Deductions -------------------
+  // insurance + investment
   let total_investment_deductions = 0;
   let retirement_total = 0;
   let insurance_total = 0;
@@ -261,18 +216,15 @@ function calculateTax() {
 
     parent_health_val = parseNumber(document.getElementById('parent_health_insurance').value);
 
-    // Retirement (SSF disabled for 2568)
     pensionVal = parseNumber(document.getElementById('pension_insurance').value);
     pvdVal     = parseNumber(document.getElementById('pvd').value);
     gpfVal     = parseNumber(document.getElementById('gpf').value);
     rmfVal     = parseNumber(document.getElementById('rmf').value);
     nsfVal     = parseNumber(document.getElementById('nsf').value);
-    const ssfVal = 0;
 
-    retirement_total = pensionVal + pvdVal + gpfVal + rmfVal + ssfVal + nsfVal;
+    retirement_total = pensionVal + pvdVal + gpfVal + rmfVal + nsfVal;
     if (retirement_total > 500000) retirement_total = 500000;
 
-    // Thai ESG + ESG Extra
     thaiesgVal = parseNumber(document.getElementById('thaiesg').value);
     thaiesgExtraTransferVal = parseNumber(document.getElementById('thaiesg_extra_transfer').value) || 0;
     thaiesgExtraNewVal = parseNumber(document.getElementById('thaiesg_extra_new').value) || 0;
@@ -286,8 +238,7 @@ function calculateTax() {
       thaiesgVal + thaiesgExtraTransferVal + thaiesgExtraNewVal + socialEntVal;
   }
 
-  // ------------------- Donation and Stimulus -------------------
-  // Donations (store raw total for capping display logic)
+  // donation + stimulus
   let donationVal = 0, donationEdu2x = 0, donationPolit = 0;
   let total_donation_deductions = 0;
   if (document.getElementById('has_donation').checked) {
@@ -299,12 +250,11 @@ function calculateTax() {
   }
   const donationRawTotal = total_donation_deductions;
 
-  // Stimulus
   let total_stimulus_deductions = 0;
   let easyVal = 0, localVal = 0, homeLoanVal = 0, newHomeVal = 0, newHomeDeduction = 0, solarVal = 0;
   if (document.getElementById('has_stimulus').checked) {
     easyVal = parseNumber(document.getElementById('easy_ereceipt').value);
-    localVal = parseNumber(document.getElementById('local_travel').value); // hidden in 2568
+    localVal = parseNumber(document.getElementById('local_travel').value);
     homeLoanVal = parseNumber(document.getElementById('home_loan_interest').value);
     newHomeVal = parseNumber(document.getElementById('new_home').value);
     newHomeDeduction = Math.floor(newHomeVal / 1000000) * 10000;
@@ -313,7 +263,6 @@ function calculateTax() {
     total_stimulus_deductions = easyVal + localVal + homeLoanVal + newHomeDeduction + solarVal;
   }
 
-  // ------------------- Totals and tax base -------------------
   let total_deductions =
     expense +
     total_personal_deductions +
@@ -324,7 +273,6 @@ function calculateTax() {
   let taxable_income = total_income - total_deductions;
   if (taxable_income < 0) taxable_income = 0;
 
-  // Cap donations to 10% of taxable_income
   let donationLimit = 0;
   let donationWasCapped = false;
   if (document.getElementById('has_donation').checked) {
@@ -335,7 +283,6 @@ function calculateTax() {
     }
   }
 
-  // Rebuild totals after donation cap
   total_deductions =
     expense +
     total_personal_deductions +
@@ -346,33 +293,19 @@ function calculateTax() {
   let net_income = total_income - total_deductions;
   if (net_income < 0) net_income = 0;
 
-  // ------------------- Progressive Tax -------------------
   let tax = 0;
-  if (net_income <= 150000) {
-    tax = 0;
-  } else if (net_income <= 300000) {
-    tax = (net_income - 150000) * 0.05;
-  } else if (net_income <= 500000) {
-    tax = ((net_income - 300000) * 0.10) + 7500;
-  } else if (net_income <= 750000) {
-    tax = ((net_income - 500000) * 0.15) + 27500;
-  } else if (net_income <= 1000000) {
-    tax = ((net_income - 750000) * 0.20) + 65000;
-  } else if (net_income <= 2000000) {
-    tax = ((net_income - 1000000) * 0.25) + 115000;
-  } else if (net_income <= 5000000) {
-    tax = ((net_income - 2000000) * 0.30) + 365000;
-  } else {
-    tax = ((net_income - 5000000) * 0.35) + 1265000;
-  }
+  if (net_income <= 150000) tax = 0;
+  else if (net_income <= 300000) tax = (net_income - 150000) * 0.05;
+  else if (net_income <= 500000) tax = ((net_income - 300000) * 0.10) + 7500;
+  else if (net_income <= 750000) tax = ((net_income - 500000) * 0.15) + 27500;
+  else if (net_income <= 1000000) tax = ((net_income - 750000) * 0.20) + 65000;
+  else if (net_income <= 2000000) tax = ((net_income - 1000000) * 0.25) + 115000;
+  else if (net_income <= 5000000) tax = ((net_income - 2000000) * 0.30) + 365000;
+  else tax = ((net_income - 5000000) * 0.35) + 1265000;
 
-  // Effective Tax Rate
   let effective_tax_rate = 0;
-  if (total_income > 0) {
-    effective_tax_rate = (tax / total_income) * 100;
-  }
+  if (total_income > 0) effective_tax_rate = (tax / total_income) * 100;
 
-  // ------------------- Fill Summary -------------------
   document.getElementById('result_total_income').innerText = formatNumber(total_income);
   document.getElementById('result_expense').innerText = formatNumber(expense);
   document.getElementById('result_deductions').innerText = formatNumber(total_deductions - expense);
@@ -385,26 +318,14 @@ function calculateTax() {
   total_withholding_tax = calculateTotalWithholdingTax();
   document.getElementById('result_withholding_tax').innerText = formatNumber(total_withholding_tax);
 
-  // Final net tax due or refund
   const X = tax - total_withholding_tax;
   const taxDueReal = document.getElementById('tax_due_real');
   const taxCreditRefund = document.getElementById('tax_credit_refund');
 
-  if (X > 0) {
-    taxDueReal.innerText = 'ภาษีที่ต้องชำระจริง';
-    taxCreditRefund.innerText = formatNumber(X);
-    taxCreditRefund.style.color = 'red';
-  } else if (X < 0) {
-    taxDueReal.innerText = 'ท่านต้องขอเครดิตคืน';
-    taxCreditRefund.innerText = formatNumber(Math.abs(X));
-    taxCreditRefund.style.color = 'green';
-  } else {
-    taxDueReal.innerText = 'ท่านไม่ต้องจ่ายภาษี!';
-    taxCreditRefund.innerText = '';
-    taxCreditRefund.style.color = '#333';
-  }
+  if (X > 0) { taxDueReal.innerText = 'ภาษีที่ต้องชำระจริง'; taxCreditRefund.innerText = formatNumber(X); taxCreditRefund.style.color = 'red'; }
+  else if (X < 0) { taxDueReal.innerText = 'ท่านต้องขอเครดิตคืน'; taxCreditRefund.innerText = formatNumber(Math.abs(X)); taxCreditRefund.style.color = 'green'; }
+  else { taxDueReal.innerText = 'ท่านไม่ต้องจ่ายภาษี!'; taxCreditRefund.innerText = ''; taxCreditRefund.style.color = '#333'; }
 
-  // Max bracket rate
   let maxTaxRate = 0;
   if (net_income > 5000000) maxTaxRate = 35;
   else if (net_income > 2000000) maxTaxRate = 30;
@@ -414,95 +335,251 @@ function calculateTax() {
   else if (net_income > 300000) maxTaxRate = 10;
   else if (net_income > 150000) maxTaxRate = 5;
   else maxTaxRate = 0;
-
   const maxTaxRateElem = document.getElementById('result_max_tax_rate');
   if (maxTaxRateElem) maxTaxRateElem.innerText = maxTaxRate + '%';
 
-  // ------------------- Recommended investments (2568-only) -------------------
-  // Hide SSF row
+  // Hide SSF
   const ssfRow = document.getElementById('max_ssf') && document.getElementById('max_ssf').parentElement;
   if (ssfRow) ssfRow.style.display = 'none';
 
-  // RMF with overall cap
+  // RMF cap
   const rmfIndividualLimit = Math.min(total_income * 0.30, 500000);
   const currentRMF = parseNumber(document.getElementById('rmf').value);
-
   pensionVal = parseNumber(document.getElementById('pension_insurance').value);
   pvdVal     = parseNumber(document.getElementById('pvd').value);
   gpfVal     = parseNumber(document.getElementById('gpf').value);
   nsfVal     = parseNumber(document.getElementById('nsf').value);
-  const ssfValForCalc = 0;
-
-  const totalRetirementWithoutRMF = pensionVal + pvdVal + gpfVal + ssfValForCalc + nsfVal;
+  const totalRetirementWithoutRMF = pensionVal + pvdVal + gpfVal + nsfVal;
   const overallCap = 500000;
   let allowedOverallAdditional = overallCap - (totalRetirementWithoutRMF + currentRMF);
   if (allowedOverallAdditional < 0) allowedOverallAdditional = 0;
-
   let leftoverRMF = Math.min(rmfIndividualLimit - currentRMF, allowedOverallAdditional);
   if (leftoverRMF < 0) leftoverRMF = 0;
   updateInvestmentDisplay('max_rmf', leftoverRMF);
 
-  // ThaiESG
   const thaiesgLimit = Math.min(total_income * 0.30, 300000);
   const currentThaiesg = parseNumber(document.getElementById('thaiesg').value);
   let leftoverThaiesg = thaiesgLimit - currentThaiesg;
   if (leftoverThaiesg < 0) leftoverThaiesg = 0;
   updateInvestmentDisplay('max_thaiesg', leftoverThaiesg);
 
-  // ThaiESG Extra (fixed text)
   const extraEl = document.getElementById('max_thaiesg_extra_new');
-  if (extraEl) {
-    extraEl.innerText = 'ไม่สามารถซื้อเพิ่มได้';
-    extraEl.style.color = 'red';
-  }
-  const thaiesgExtraBox = document.getElementById('max_thaiesg_extra_container');
-  if (thaiesgExtraBox) thaiesgExtraBox.style.display = 'block';
+  if (extraEl) { extraEl.innerText = 'ไม่สามารถซื้อเพิ่มได้'; extraEl.style.color = 'red'; }
+  const extraBox = document.getElementById('max_thaiesg_extra_container');
+  if (extraBox) extraBox.style.display = 'block';
 
-  // ------------------- Build + render breakdown lists -------------------
   const expenseItems = computeExpenseBreakdown();
-
   const ctx = {
-    personal_allowance,
-    spouse_allowance,
-    child_allowance,
-    parents_allowance,
-    disabled_allowance,
-    social_security,
-
-    life_val,
-    health_val,
-    parent_health_val,
-
-    pensionVal,
-    pvdVal,
-    gpfVal,
-    rmfVal,
-    nsfVal,
-    thaiesgVal,
-    thaiesgExtraTransferVal,
-    thaiesgExtraNewVal,
-    socialEntVal,
-
-    donationVal,
-    donationEdu2x,
-    donationPolit,
-    total_donation_deductions,
-    donation_capped: donationWasCapped,
-
-    easyVal,
-    localVal,
-    homeLoanVal,
-    newHomeDeduction,
-    solarVal,
+    personal_allowance, spouse_allowance, child_allowance, parents_allowance, disabled_allowance, social_security,
+    life_val, health_val, parent_health_val,
+    pensionVal, pvdVal, gpfVal, rmfVal, nsfVal,
+    thaiesgVal, thaiesgExtraTransferVal, thaiesgExtraNewVal, socialEntVal,
+    donationVal, donationEdu2x, donationPolit, total_donation_deductions, donation_capped: donationWasCapped,
+    easyVal, localVal, homeLoanVal, newHomeDeduction, solarVal,
   };
   const deductionItems = buildDeductionItemsUsed(ctx);
   renderDeductionBreakdown(expenseItems, deductionItems);
 
-  // Finish: go to Step 4
   isTaxCalculated = true;
   setActiveStep(4);
   showStep(4);
 
-  try { if (typeof postLog === 'function') postLog(); } catch(_){}
+  renderTaxWaterfall(total_income, net_income, expense, personal_allowance);
 
+  try { if (typeof postLog === 'function') postLog(); } catch (_){}
+}
+
+/* ====================== Waterfall stacked by tax bracket ===================== */
+function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowance){
+  const el = document.getElementById('tax_waterfall');
+  if (!el || typeof Chart === 'undefined') return;
+
+  // Font
+  Chart.defaults.font.family = "'Kanit', sans-serif";
+  Chart.defaults.font.size = 12;
+
+  // Brackets
+  const BRACKETS = [
+    { label:'0%',  size:150000,  rate:0.00 },
+    { label:'5%',  size:150000,  rate:0.05 },
+    { label:'10%', size:200000,  rate:0.10 },
+    { label:'15%', size:250000,  rate:0.15 },
+    { label:'20%', size:250000,  rate:0.20 },
+    { label:'25%', size:1000000, rate:0.25 },
+    { label:'30%', size:3000000, rate:0.30 },
+    { label:'35%', size:Number.POSITIVE_INFINITY, rate:0.35 }
+  ];
+
+  // Use only tiers actually reached
+  let remain = netIncome;
+  const used = [];
+  for (const b of BRACKETS){
+    if (remain <= 0) break;
+    const inc = Math.max(0, Math.min(remain, b.size));
+    used.push({ label:b.label, income:inc - inc*b.rate, tax:inc*b.rate, total:inc });
+    remain -= inc;
+  }
+
+  // Labels
+  const labels = ['รายได้พึงประเมิน', ...used.map(b => b.label)];
+
+  // First bar: revenue after Expense and Personal only
+  const firstPositive = Math.max(0, totalIncome - expenseVal - personalAllowance);
+
+  // Negative stacks on first bar
+  const negExpense  = [-Math.max(0, expenseVal), ...Array(used.length).fill(0)];
+  const negPersonal = [-Math.max(0, personalAllowance), ...Array(used.length).fill(0)];
+
+  // Offset + bracket stacks
+  const offset = [0];
+  const incomePart = [firstPositive > 0 ? 0 : 0]; // handled by separate first-positive dataset
+  const taxPart = [0];
+  let cum = 0;
+  for (const b of used){
+    offset.push(cum);
+    incomePart.push(b.income);
+    taxPart.push(b.tax);
+    cum += b.total;
+  }
+
+  // First positive bar dataset
+  const firstPos = [firstPositive, ...Array(used.length).fill(0)];
+
+  // Nice y-scale: 10 steps up, 2 steps down
+  const posPeakCandidate = Math.max(firstPositive, cum);
+  const niceStep = (v)=>{
+    if (v <= 0) return 10000;
+    const p = Math.pow(10, Math.floor(Math.log10(v)) - 1); // e.g. 100k for millions
+    const step = Math.ceil((v/10) / p) * p;                 // target 10 ticks
+    return step;
+  };
+  const step = niceStep(posPeakCandidate);
+  const yMax = step * 10;
+  const yMin = -2 * step;
+
+  if (window._taxChart) window._taxChart.destroy();
+
+  window._taxChart = new Chart(el.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        // offset first so stacks float as a waterfall
+        {
+          label: 'offset',
+          data: offset,
+          backgroundColor: 'rgba(0,0,0,0)',
+          borderColor: 'rgba(0,0,0,0)',
+          stack: 'wf',
+          tooltip: { enabled: false }
+        },
+        // first bar positive (after expense + personal only)
+        {
+          label: 'รายได้สุทธิ',
+          data: firstPos.concat([]),
+          backgroundColor: 'rgba(99,200,177,0.55)',
+          borderColor: 'rgba(99,200,177,0.9)',
+          borderWidth: 1,
+          stack: 'wf',
+          borderRadius: 6
+        },
+        // bracket income part
+        {
+          label: 'รายได้สุทธิ',
+          data: [0, ...incomePart.slice(1)],
+          backgroundColor: 'rgba(99,200,177,0.55)',
+          borderColor: 'rgba(99,200,177,0.9)',
+          borderWidth: 1,
+          stack: 'wf',
+          borderRadius: 6
+        },
+        // bracket tax part
+        {
+          label: 'ภาษี',
+          data: taxPart,
+          backgroundColor: 'rgba(16,185,129,0.9)',
+          borderColor: 'rgba(16,185,129,1)',
+          borderWidth: 1,
+          stack: 'wf',
+          borderRadius: 6
+        },
+        // negatives on first bar
+        {
+          label: 'ค่าใช้จ่าย',
+          data: negExpense,
+          backgroundColor: 'rgba(255,180,110,0.9)',
+          borderColor: 'rgba(255,180,110,1)',
+          borderWidth: 1,
+          stack: 'wf',
+          borderRadius: 6
+        },
+        {
+          label: 'หักลดหย่อน',
+          data: negPersonal,
+          backgroundColor: 'rgba(234,120,60,0.95)',
+          borderColor: 'rgba(234,120,60,1)',
+          borderWidth: 1,
+          stack: 'wf',
+          borderRadius: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          min: yMin,
+          max: yMax,
+          ticks: { stepSize: step, callback: v => formatNumber(v) },
+          grid: { display: true, color: 'rgba(0,0,0,0.1)' },   // bring back Y gray lines
+          title: { display: true, text: 'รายได้ (บาท)' }
+        },
+        x: {
+          title: { display: true, text: 'ขั้นภาษี' },
+          grid: { display: false }                             // remove X grid lines
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: 'index',
+          intersect: true,
+          callbacks: {
+            title: (items)=>{
+              const lab = items[0].label;
+              return lab === 'รายได้พึงประเมิน' ? lab : `ช่วง: ${lab}`;
+            },
+            label: (ctx)=>{
+              const ds = ctx.dataset.label;
+              const lab = ctx.label;
+              const v = ctx.parsed.y || 0;
+              const abs = Math.abs(v);
+              if (lab === 'รายได้พึงประเมิน') {
+                if (ds === 'ค่าใช้จ่าย') return `ค่าใช้จ่าย -${formatNumber(abs)} บาท ช่วง รายได้พึงประเมิน`;
+                if (ds === 'หักลดหย่อน') return `หักลดหย่อน -${formatNumber(abs)} บาท ช่วง รายได้พึงประเมิน`;
+                if (ds === 'รายได้สุทธิ' && v > 0) return `รายได้หลังหักสองรายการ: ${formatNumber(v)} บาท`;
+                return null;
+              } else {
+                if (ds === 'รายได้สุทธิ' && v > 0) return `รายได้สุทธิ ${formatNumber(v)} บาท ช่วง ${lab}`;
+                if (ds === 'ภาษี' && v > 0)    return `ภาษี ${formatNumber(v)} บาท ช่วง ${lab}`;
+                return null;
+              }
+            }
+          }
+        }
+      },
+      interaction: { mode: 'index', intersect: true },
+      onClick: (e, els)=>{
+        if (!els.length) return;
+        const i = els[0].index;
+        const targets = (i === 0)
+          ? [{datasetIndex:4,index:0},{datasetIndex:5,index:0}] // show two orange parts
+          : [{datasetIndex:2,index:i},{datasetIndex:3,index:i}]; // income+tax in that tier
+        window._taxChart.setActiveElements(targets);
+        window._taxChart.tooltip.setActiveElements(targets, {x:e.x, y:e.y});
+        window._taxChart.update();
+      }
+    }
+  });
 }
