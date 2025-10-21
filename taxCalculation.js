@@ -394,11 +394,10 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
   const el = document.getElementById('tax_waterfall');
   if (!el || typeof Chart === 'undefined') return;
 
-  // Font
   Chart.defaults.font.family = "'Kanit', sans-serif";
   Chart.defaults.font.size = 12;
 
-  // Brackets
+  // Tax brackets
   const BRACKETS = [
     { label:'0%',  size:150000,  rate:0.00 },
     { label:'5%',  size:150000,  rate:0.05 },
@@ -410,7 +409,7 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
     { label:'35%', size:Number.POSITIVE_INFINITY, rate:0.35 }
   ];
 
-  // Use only tiers actually reached
+  // Allocate net income into reached brackets
   let remain = netIncome;
   const used = [];
   for (const b of BRACKETS){
@@ -423,16 +422,17 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
   // Labels
   const labels = ['รายได้พึงประเมิน', ...used.map(b => b.label)];
 
-  // First bar: revenue after Expense and Personal only
-  const firstPositive = Math.max(0, totalIncome - expenseVal - personalAllowance);
+  // First bar = net income (positive part only)
+  const firstPositive = Math.max(0, netIncome);
 
-  // Negative stacks on first bar
-  const negExpense  = [-Math.max(0, expenseVal), ...Array(used.length).fill(0)];
-  const negPersonal = [-Math.max(0, personalAllowance), ...Array(used.length).fill(0)];
+  // Negative stacks on the first bar
+  const otherDeductions = Math.max(0, totalIncome - expenseVal - netIncome); // all non-expense deductions
+  const negExpense  = [-Math.max(0, expenseVal), ...Array(used.length).fill(0)];  // light orange
+  const negPersonal = [-otherDeductions,         ...Array(used.length).fill(0)];  // dark orange (personal+invest/etc.)
 
   // Offset + bracket stacks
   const offset = [0];
-  const incomePart = [firstPositive > 0 ? 0 : 0]; // handled by separate first-positive dataset
+  const incomePart = [0];
   const taxPart = [0];
   let cum = 0;
   for (const b of used){
@@ -445,17 +445,30 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
   // First positive bar dataset
   const firstPos = [firstPositive, ...Array(used.length).fill(0)];
 
-  // Nice y-scale: 10 steps up, 2 steps down
-  const posPeakCandidate = Math.max(firstPositive, cum);
-  const niceStep = (v)=>{
-    if (v <= 0) return 10000;
-    const p = Math.pow(10, Math.floor(Math.log10(v)) - 1); // e.g. 100k for millions
-    const step = Math.ceil((v/10) / p) * p;                 // target 10 ticks
-    return step;
-  };
-  const step = niceStep(posPeakCandidate);
+  // Nice step helper → prefers 1/2/2.5/5/10 × 10^k (≈10 ticks)
+  function niceStepFor(target, desired=10){
+    if (target <= 0) return 10000;
+    const raw = target / desired;
+    const pow10 = Math.pow(10, Math.floor(Math.log10(raw)));
+    const frac = raw / pow10;
+    let nice;
+    if (frac <= 1) nice = 1;
+    else if (frac <= 2) nice = 2;
+    else if (frac <= 2.5) nice = 2.5;
+    else if (frac <= 5) nice = 5;
+    else nice = 10;
+    return nice * pow10;
+  }
+
+  // Dynamic scales: positive auto, negative ≥ 200,000 and expands with deductions
+  const posPeak = Math.max(firstPositive, cum);
+  const step = niceStepFor(posPeak, 10);
   const yMax = step * 10;
-  const yMin = -2 * step;
+
+  const negPeak = Math.max(expenseVal + otherDeductions, 0);
+  const NEG_MIN_BASE = 200000; // two 100k boundaries minimum
+  const yMinAbs = Math.max(NEG_MIN_BASE, Math.ceil(negPeak / step) * step);
+  const yMin = -yMinAbs;
 
   if (window._taxChart) window._taxChart.destroy();
 
@@ -464,8 +477,7 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
     data: {
       labels,
       datasets: [
-        // offset first so stacks float as a waterfall
-        {
+        { // offset for waterfall stacking
           label: 'offset',
           data: offset,
           backgroundColor: 'rgba(0,0,0,0)',
@@ -473,18 +485,16 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
           stack: 'wf',
           tooltip: { enabled: false }
         },
-        // first bar positive (after expense + personal only)
-        {
+        { // first bar positive (net income)
           label: 'รายได้สุทธิ',
-          data: firstPos.concat([]),
+          data: firstPos,
           backgroundColor: 'rgba(99,200,177,0.55)',
           borderColor: 'rgba(99,200,177,0.9)',
           borderWidth: 1,
           stack: 'wf',
           borderRadius: 6
         },
-        // bracket income part
-        {
+        { // bracket income parts
           label: 'รายได้สุทธิ',
           data: [0, ...incomePart.slice(1)],
           backgroundColor: 'rgba(99,200,177,0.55)',
@@ -493,8 +503,7 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
           stack: 'wf',
           borderRadius: 6
         },
-        // bracket tax part
-        {
+        { // bracket tax parts
           label: 'ภาษี',
           data: taxPart,
           backgroundColor: 'rgba(16,185,129,0.9)',
@@ -503,8 +512,7 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
           stack: 'wf',
           borderRadius: 6
         },
-        // negatives on first bar
-        {
+        { // expense (light orange)
           label: 'ค่าใช้จ่าย',
           data: negExpense,
           backgroundColor: 'rgba(255,180,110,0.9)',
@@ -513,7 +521,7 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
           stack: 'wf',
           borderRadius: 6
         },
-        {
+        { // other deductions (dark orange)
           label: 'หักลดหย่อน',
           data: negPersonal,
           backgroundColor: 'rgba(234,120,60,0.95)',
@@ -527,60 +535,65 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false }, // whole-column hit area
       scales: {
         y: {
           min: yMin,
           max: yMax,
           ticks: { stepSize: step, callback: v => formatNumber(v) },
-          grid: { display: true, color: 'rgba(0,0,0,0.1)' },   // bring back Y gray lines
+          grid: { display: true, color: 'rgba(0,0,0,0.1)' },
           title: { display: true, text: 'รายได้ (บาท)' }
         },
         x: {
           title: { display: true, text: 'ขั้นภาษี' },
-          grid: { display: false }                             // remove X grid lines
+          grid: { display: false }
         }
       },
       plugins: {
         legend: { display: false },
         tooltip: {
           mode: 'index',
-          intersect: true,
+          intersect: false,
           callbacks: {
-            title: (items)=>{
+            title: (items) => {
               const lab = items[0].label;
-              return lab === 'รายได้พึงประเมิน' ? lab : `ช่วง: ${lab}`;
+              return lab === 'รายได้พึงประเมิน' ? lab : `ช่วง ${lab}`; // no colon
             },
-            label: (ctx)=>{
+            label: (ctx) => {
               const ds = ctx.dataset.label;
               const lab = ctx.label;
               const v = ctx.parsed.y || 0;
               const abs = Math.abs(v);
               if (lab === 'รายได้พึงประเมิน') {
-                if (ds === 'ค่าใช้จ่าย') return `ค่าใช้จ่าย -${formatNumber(abs)} บาท ช่วง รายได้พึงประเมิน`;
-                if (ds === 'หักลดหย่อน') return `หักลดหย่อน -${formatNumber(abs)} บาท ช่วง รายได้พึงประเมิน`;
-                if (ds === 'รายได้สุทธิ' && v > 0) return `รายได้พึงประเมิน: ${formatNumber(v)} บาท`;
+                if (ds === 'ค่าใช้จ่าย' && v < 0)  return `ค่าใช้จ่าย -${formatNumber(abs)} บาท`;
+                if (ds === 'หักลดหย่อน' && v < 0) return `หักลดหย่อน -${formatNumber(abs)} บาท`;
+                if (ds === 'รายได้สุทธิ' && v > 0) return `รายได้พึงประเมิน ${formatNumber(v)} บาท`;
                 return null;
               } else {
-                if (ds === 'รายได้สุทธิ' && v > 0) return `รายได้สุทธิ ${formatNumber(v)} บาท ช่วง ${lab}`;
-                if (ds === 'ภาษี' && v > 0)    return `ภาษี ${formatNumber(v)} บาท ช่วง ${lab}`;
+                if (ds === 'รายได้สุทธิ' && v > 0) return `รายได้สุทธิ ${formatNumber(v)} บาท`;
+                if (ds === 'ภาษี' && v > 0)      return `ภาษี ${formatNumber(v)} บาท`;
                 return null;
               }
             }
           }
         }
       },
-      interaction: { mode: 'index', intersect: true },
-      onClick: (e, els)=>{
+      onClick: (evt, _els, chart) => {
+        const els = chart.getElementsAtEventForMode(evt, 'index', { intersect:false }, true);
         if (!els.length) return;
-        const i = els[0].index;
-        const targets = (i === 0)
-          ? [{datasetIndex:4,index:0},{datasetIndex:5,index:0}] // show two orange parts
-          : [{datasetIndex:2,index:i},{datasetIndex:3,index:i}]; // income+tax in that tier
-        window._taxChart.setActiveElements(targets);
-        window._taxChart.tooltip.setActiveElements(targets, {x:e.x, y:e.y});
-        window._taxChart.update();
+        const idx = els[0].index;
+
+        const targets = (idx === 0)
+          ? [{ datasetIndex:4, index:0 }, { datasetIndex:5, index:0 }]           // show two orange parts on first bar
+          : [{ datasetIndex:2, index:idx }, { datasetIndex:3, index:idx }];       // show income+tax on selected bracket
+
+        const anchor = chart.getDatasetMeta(targets[0].datasetIndex).data[idx];
+        const pt = anchor && anchor.getCenterPoint ? anchor.getCenterPoint() : { x: evt.x, y: evt.y };
+
+        chart.setActiveElements(targets);
+        chart.tooltip.setActiveElements(targets, pt);
+        chart.update();
       }
     }
   });
 }
-
