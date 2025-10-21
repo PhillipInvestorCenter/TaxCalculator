@@ -558,7 +558,7 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
               if (lab === 'รายได้พึงประเมิน') {
                 if (ds === 'ค่าใช้จ่าย') return `ค่าใช้จ่าย -${formatNumber(abs)} บาท ช่วง รายได้พึงประเมิน`;
                 if (ds === 'หักลดหย่อน') return `หักลดหย่อน -${formatNumber(abs)} บาท ช่วง รายได้พึงประเมิน`;
-                if (ds === 'รายได้สุทธิ' && v > 0) return `รายได้หลังหักสองรายการ: ${formatNumber(v)} บาท`;
+                if (ds === 'รายได้สุทธิ' && v > 0) return `รายได้พึงประเมิน: ${formatNumber(v)} บาท`;
                 return null;
               } else {
                 if (ds === 'รายได้สุทธิ' && v > 0) return `รายได้สุทธิ ${formatNumber(v)} บาท ช่วง ${lab}`;
@@ -583,3 +583,4 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
     }
   });
 }
+
