@@ -24,7 +24,7 @@
       <button type="button" onclick="startCalculator(2568)">ปีภาษี 2568</button>
     </div>
     <div class="app-version" aria-hidden="true">
-      PIC Tax Calculator Version 0.21<br>21.10.2025
+      PIC Tax Calculator Version 0.22<br>24.10.2025
     </div>
   </div>
 
@@ -549,6 +549,18 @@
           <div class="info">ลดหย่อนได้ตามที่จ่ายจริง ไม่เกิน 15,000 บาท</div>
         </div>
         
+        <div id="travel_main_secondary_container">
+          <label>ค่าลดหย่อนสำหรับการเที่ยวเมืองหลัก-รอง 2568 (บาท)
+            <span class="limit-label" id="travel_main_secondary_limit_label"></span>
+          </label>
+          <input type="text" id="travel_main_secondary_2568" value="0" inputmode="decimal">
+          <div class="info">
+            ค่าที่พักและค่าอาหารที่จ่ายให้ผู้ประกอบการจด VAT ระหว่าง 29 ต.ค.–15 ธ.ค. 2568
+            หักลดหย่อนได้สูงสุด 20,000 บาท หากท่องเที่ยวในเมืองหลัก
+            และหักได้ 1.5 เท่า (ไม่เกิน 30,000 บาท) หากเที่ยวเมืองรอง 55 จังหวัด หรือบางอำเภอใน 15 จังหวัด
+          </div>
+        </div>
+
         <label>ดอกเบี้ยเงินกู้เพื่อซื้อที่อยู่อาศัย (บาท)
           <span class="limit-label" id="home_loan_interest_limit_label"></span>
         </label>
