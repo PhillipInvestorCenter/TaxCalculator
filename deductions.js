@@ -86,6 +86,7 @@ function getOtherDeductionLimit(fieldId) {
     case 'home_loan_interest':       return 100000;
     case 'solar_rooftop':            return 200000;
     case 'new_home':                 return Number.MAX_VALUE;
+    case 'travel_main_secondary_2568': return 30000;
     default:
       return Number.MAX_VALUE;
   }
@@ -130,6 +131,8 @@ function updateDeductionLimits() {
   const socialSecurityCap = 9000; // For Social Security
   const solarRooftopLimit = 200000;
   setLimitLabel('solar_rooftop', 'solar_rooftop_limit_label', solarRooftopLimit);
+  const travelMainSecondaryLimit = 30000;
+  setLimitLabel('travel_main_secondary_2568','travel_main_secondary_limit_label', travelMainSecondaryLimit);
 
 
   setLimitLabel('pension_insurance', 'pension_insurance_limit_label', pensionInsuranceLimit);
