@@ -16,7 +16,7 @@ const retirementFields = ['pension_insurance','pvd','gpf','rmf','ssf','nsf'];
 const otherDeductionFields = [
   'life_insurance','health_insurance','parent_health_insurance','thaiesg',
   'social_enterprise','donation_political','easy_ereceipt','local_travel',
-  'home_loan_interest','new_home','solar_rooftop'
+  'travel_main_secondary_2568','home_loan_interest','new_home','solar_rooftop'
 ];
 
 /* ---- Navigation gate ---- */
@@ -40,7 +40,7 @@ window.onload = function () {
     'pension_insurance','ssf','rmf','pvd','gpf','thaiesg',
     'social_enterprise','nsf','home_loan_interest','donation',
     'donation_education','donation_political','easy_ereceipt',
-    'local_travel','new_home','social_security',
+    'local_travel','travel_main_secondary_2568','new_home','social_security',
     'thaiesg_extra_transfer','thaiesg_extra_new','solar_rooftop'
   ];
   numberFields.forEach((id) => {
@@ -176,6 +176,8 @@ function startCalculator() {
 
   const travel = document.getElementById('local_travel_container');
   if (travel) travel.style.display = 'none';
+  const travelMS = document.getElementById('travel_main_secondary_container');
+  if (travelMS) travelMS.style.display = 'block';
 
   document.getElementById('landing-page').style.display = 'none';
   document.getElementById('main-container').style.display = 'block';
