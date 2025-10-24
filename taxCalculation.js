@@ -139,6 +139,7 @@ function buildDeductionItemsUsed(ctx) {
 
   if (ctx.easyVal > 0) items.push(['Easy e-Receipt', ctx.easyVal]);
   if (ctx.localVal > 0) items.push(['เที่ยวเมืองรอง', ctx.localVal]);
+  if (ctx.travelMainSecondaryVal > 0) items.push(['เที่ยวเมืองหลัก-รอง 2568', ctx.travelMainSecondaryVal]);
   if (ctx.homeLoanVal > 0) items.push(['ดอกเบี้ยกู้ซื้อที่อยู่อาศัย', ctx.homeLoanVal]);
   if (ctx.newHomeDeduction > 0) items.push(['ซื้อบ้านใหม่ (สิทธิที่ใช้ได้)', ctx.newHomeDeduction]);
   if (ctx.solarVal > 0) items.push(['Solar Rooftop', ctx.solarVal]);
@@ -251,16 +252,17 @@ function calculateTax() {
   const donationRawTotal = total_donation_deductions;
 
   let total_stimulus_deductions = 0;
-  let easyVal = 0, localVal = 0, homeLoanVal = 0, newHomeVal = 0, newHomeDeduction = 0, solarVal = 0;
+  let easyVal = 0, localVal = 0, travelMainSecondaryVal = 0, homeLoanVal = 0, newHomeVal = 0, newHomeDeduction = 0, solarVal = 0;
   if (document.getElementById('has_stimulus').checked) {
     easyVal = parseNumber(document.getElementById('easy_ereceipt').value);
     localVal = parseNumber(document.getElementById('local_travel').value);
+    travelMainSecondaryVal = parseNumber(document.getElementById('travel_main_secondary_2568')?.value) || 0;
     homeLoanVal = parseNumber(document.getElementById('home_loan_interest').value);
     newHomeVal = parseNumber(document.getElementById('new_home').value);
     newHomeDeduction = Math.floor(newHomeVal / 1000000) * 10000;
     if (newHomeDeduction > 100000) newHomeDeduction = 100000;
     solarVal = parseNumber(document.getElementById('solar_rooftop').value);
-    total_stimulus_deductions = easyVal + localVal + homeLoanVal + newHomeDeduction + solarVal;
+    total_stimulus_deductions = easyVal + localVal + travelMainSecondaryVal + homeLoanVal + newHomeDeduction + solarVal;
   }
 
   let total_deductions =
@@ -375,7 +377,7 @@ function calculateTax() {
     pensionVal, pvdVal, gpfVal, rmfVal, nsfVal,
     thaiesgVal, thaiesgExtraTransferVal, thaiesgExtraNewVal, socialEntVal,
     donationVal, donationEdu2x, donationPolit, total_donation_deductions, donation_capped: donationWasCapped,
-    easyVal, localVal, homeLoanVal, newHomeDeduction, solarVal,
+    easyVal, localVal, travelMainSecondaryVal, homeLoanVal, newHomeDeduction, solarVal,
   };
   const deductionItems = buildDeductionItemsUsed(ctx);
   renderDeductionBreakdown(expenseItems, deductionItems);
@@ -535,7 +537,7 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false }, // whole-column hit area
+      interaction: { mode: 'index', intersect: false },
       scales: {
         y: {
           min: yMin,
@@ -557,7 +559,7 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
           callbacks: {
             title: (items) => {
               const lab = items[0].label;
-              return lab === 'รายได้พึงประเมิน' ? lab : `ช่วง ${lab}`; // no colon
+              return lab === 'รายได้พึงประเมิน' ? lab : `ช่วง ${lab}`;
             },
             label: (ctx) => {
               const ds = ctx.dataset.label;
@@ -584,8 +586,8 @@ function renderTaxWaterfall(totalIncome, netIncome, expenseVal, personalAllowanc
         const idx = els[0].index;
 
         const targets = (idx === 0)
-          ? [{ datasetIndex:4, index:0 }, { datasetIndex:5, index:0 }]           // show two orange parts on first bar
-          : [{ datasetIndex:2, index:idx }, { datasetIndex:3, index:idx }];       // show income+tax on selected bracket
+          ? [{ datasetIndex:4, index:0 }, { datasetIndex:5, index:0 }]
+          : [{ datasetIndex:2, index:idx }, { datasetIndex:3, index:idx }];
 
         const anchor = chart.getDatasetMeta(targets[0].datasetIndex).data[idx];
         const pt = anchor && anchor.getCenterPoint ? anchor.getCenterPoint() : { x: evt.x, y: evt.y };
