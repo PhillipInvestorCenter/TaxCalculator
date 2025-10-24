@@ -297,7 +297,7 @@ function formatNumber(num) {
   }
 
   // --- Google Sheet logging ---
-const LOG_URL = 'https://script.google.com/macros/s/AKfycby1txxiKfxcWfV1Wk_c7MJ-CctOMKqVdLcupYdpu2YRTIN9mVsP7Br8uokPyTmC2fVQ/exec';
+const LOG_URL = 'https://script.google.com/macros/s/AKfycbyZLgCoBjSXnTB254s-naqHiGJY1-faFw8Xz4D2wWGJHFMpkqMU9NRbHTtcQp5PWYvf/exec';
 
 function _sessionId(){
   try{
@@ -353,7 +353,7 @@ const LOG_HEADERS = [
   'pension_insurance','pvd','gpf','ssf','rmf','nsf',
   'thaiesg','thaiesg_extra_transfer','thaiesg_extra_new','social_enterprise',
   'donation','donation_education','donation_political',
-  'easy_ereceipt','local_travel','home_loan_interest','new_home','solar_rooftop',
+  'easy_ereceipt','local_travel','travel_main_secondary_2568','home_loan_interest','new_home','solar_rooftop',
   'result_total_income','result_expense','result_deductions',
   'result_net_income','result_tax_before_wh','result_withholding_tax',
   'tax_due_real','tax_credit_refund','result_max_tax_rate','result_effective_tax_rate'
