@@ -1,0 +1,626 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>โปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="favicon.ico">
+</head>
+<body>
+
+  <!-- Landing Page -->
+  <div class="landing-page" id="landing-page">
+    <h1>ยินดีต้อนรับสู่โปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา</h1>
+    <p>เลือกปีภาษีที่คุณต้องการคำนวณภาษี</p>
+    <div class="tax-year-selection">
+      <button type="button" onclick="startCalculator(2568)">ปีภาษี 2568</button>
+    </div>
+    <div class="app-version" aria-hidden="true">
+      PIC Tax Calculator Version 1.0<br>30.10.2025
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container" id="main-container" style="display: none;">
+    <h1>โปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา</h1>
+
+    <!-- Stepper -->
+    <div class="stepper" id="stepper" data-current-step="1">
+      <div class="stepper-step active" data-step="1">
+        <div class="stepper-step-circle">1</div>
+        <div class="stepper-step-label">รายได้</div>
+      </div>
+      <div class="stepper-step" data-step="2">
+        <div class="stepper-step-circle">2</div>
+        <div class="stepper-step-label">ค่าใช้จ่าย</div>
+      </div>
+      <div class="stepper-step" data-step="3">
+        <div class="stepper-step-circle">3</div>
+        <div class="stepper-step-label">ค่าลดหย่อน</div>
+      </div>
+      <div class="stepper-step" data-step="4">
+        <div class="stepper-step-circle">4</div>
+        <div class="stepper-step-label">สรุปผล</div>
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-content active" id="step-1">
+      <h2>ขั้นตอนที่ 1 รายได้</h2>
+
+      <div class="calculation-mode">
+        <label for="calc_mode">เลือกหน่วยการคำนวณ</label>
+        <select id="calc_mode">
+          <option value="year">รายปี</option>
+          <option value="month">รายเดือน</option>
+        </select>
+      </div>
+
+      <div class="revenue-types">
+        <p>เลือกประเภทของรายได้ (เลือกได้หลายประเภท)</p>
+
+        <!-- Type 1 -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="rev_type_1" name="rev_type" value="1">
+          <label for="rev_type_1">เงินได้ประเภทที่ 1 เงินเดือน ค่าจ้าง โบนัส เบี้ยเลี้ยง</label>
+        </div>
+        <div id="rev_type_1_input" style="display: none;">
+          <label>จำนวนเงิน (บาท)</label>
+          <input type="text" id="rev1_amount" value="0" inputmode="decimal">
+          <div class="sub-section" style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="rev1_withholding_checkbox">
+            <label for="rev1_withholding_checkbox">มีภาษีหัก ณ ที่จ่าย</label>
+          </div>
+          <div id="rev1_withholding_input_container" class="sub-section" style="display:none;">
+            <label>จำนวนภาษี (บาท)</label>
+            <input type="text" id="rev1_withholding_input" value="0" inputmode="decimal">
+          </div>
+        </div>
+
+        <!-- Type 2 -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="rev_type_2" name="rev_type" value="2">
+          <label for="rev_type_2">เงินได้ประเภทที่ 2 เงินได้จากหน้าที่หรือตำแหน่งงาน, ค่าธรรมเนียม, ค่านายหน้า ฯลฯ</label>
+        </div>
+        <div id="rev_type_2_input" style="display: none;">
+          <label>จำนวนเงิน (บาท)</label>
+          <input type="text" id="rev2_amount" value="0" inputmode="decimal">
+          <div class="sub-section" style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="rev2_withholding_checkbox">
+            <label for="rev2_withholding_checkbox">มีภาษีหัก ณ ที่จ่าย</label>
+          </div>
+          <div id="rev2_withholding_input_container" class="sub-section" style="display:none;">
+            <label>จำนวนภาษี (บาท)</label>
+            <input type="text" id="rev2_withholding_input" value="0" inputmode="decimal">
+          </div>
+        </div>
+
+        <!-- Type 3 -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="rev_type_3" name="rev_type" value="3">
+          <label for="rev_type_3">เงินได้ประเภทที่ 3 ค่าแห่งกู๊ดวิลล์, ลิขสิทธิ์, สิทธิอย่างอื่น</label>
+        </div>
+        <div id="rev_type_3_input" style="display: none;">
+          <label>จำนวนเงิน (บาท)</label>
+          <input type="text" id="rev3_amount" value="0" inputmode="decimal">
+          <div class="sub-section" style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="rev3_withholding_checkbox">
+            <label for="rev3_withholding_checkbox">มีภาษีหัก ณ ที่จ่าย</label>
+          </div>
+          <div id="rev3_withholding_input_container" class="sub-section" style="display:none;">
+            <label>จำนวนภาษี (บาท)</label>
+            <input type="text" id="rev3_withholding_input" value="0" inputmode="decimal">
+          </div>
+        </div>
+
+        <!-- Type 4 -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="rev_type_4" name="rev_type" value="4">
+          <label for="rev_type_4">เงินได้ประเภทที่ 4 ดอกเบี้ย, เงินปันผล, ส่วนแบ่งกำไร ฯลฯ</label>
+        </div>
+        <div id="rev_type_4_input" style="display: none;">
+          <label>จำนวนเงิน (บาท)</label>
+          <input type="text" id="rev4_amount" value="0" inputmode="decimal">
+          <div class="sub-section" style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="rev4_withholding_checkbox">
+            <label for="rev4_withholding_checkbox">มีภาษีหัก ณ ที่จ่าย</label>
+          </div>
+          <div id="rev4_withholding_input_container" class="sub-section" style="display:none;">
+            <label>จำนวนภาษี (บาท)</label>
+            <input type="text" id="rev4_withholding_input" value="0" inputmode="decimal">
+          </div>
+        </div>
+
+        <!-- Type 5 -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="rev_type_5" name="rev_type" value="5">
+          <label for="rev_type_5">เงินได้ประเภทที่ 5 รายได้จากการให้เช่าทรัพย์สิน, การผิดสัญญา ฯลฯ</label>
+        </div>
+        <div id="rev_type_5_input" style="display: none;">
+          <p>เลือกและกรอกจำนวนเงินสำหรับแต่ละประเภท (อัตราหักค่าใช้จ่าย)</p>
+
+          <div class="sub-section inline-checkbox">
+            <input type="checkbox" id="rev5_sub_1">
+            <label for="rev5_sub_1">บ้าน, โรงเรือน, สิ่งปลูกสร้าง, แพ</label>
+          </div>
+          <div id="rev5_sub_1_input" class="sub-section" style="display:none;">
+            <label>จำนวนเงิน (บาท)</label>
+            <input type="text" id="rev5_sub1_amount" value="0" inputmode="decimal">
+          </div>
+
+          <div class="sub-section inline-checkbox">
+            <input type="checkbox" id="rev5_sub_2">
+            <label for="rev5_sub_2">ที่ดินที่ใช้ในการเกษตร</label>
+          </div>
+          <div id="rev5_sub_2_input" class="sub-section" style="display:none;">
+            <label>จำนวนเงิน (บาท)</label>
+            <input type="text" id="rev5_sub2_amount" value="0" inputmode="decimal">
+          </div>
+
+          <div class="sub-section inline-checkbox">
+            <input type="checkbox" id="rev5_sub_3">
+            <label for="rev5_sub_3">ที่ดินที่มิได้ใช้ในการเกษตร</label>
+          </div>
+          <div id="rev5_sub_3_input" class="sub-section" style="display:none;">
+            <label>จำนวนเงิน (บาท)</label>
+            <input type="text" id="rev5_sub3_amount" value="0" inputmode="decimal">
+          </div>
+
+          <div class="sub-section inline-checkbox">
+            <input type="checkbox" id="rev5_sub_4">
+            <label for="rev5_sub_4">ยานพาหนะ</label>
+          </div>
+          <div id="rev5_sub_4_input" class="sub-section" style="display:none;">
+            <label>จำนวนเงิน (บาท)</label>
+            <input type="text" id="rev5_sub4_amount" value="0" inputmode="decimal">
+          </div>
+
+          <div class="sub-section inline-checkbox">
+            <input type="checkbox" id="rev5_sub_5">
+            <label for="rev5_sub_5">ทรัพย์สินอื่น</label>
+          </div>
+          <div id="rev5_sub_5_input" class="sub-section" style="display:none;">
+            <label>จำนวนเงิน (บาท)</label>
+            <input type="text" id="rev5_sub5_amount" value="0" inputmode="decimal">
+          </div>
+
+          <div class="sub-section inline-checkbox" style="gap:8px;">
+            <input type="checkbox" id="rev5_withholding_checkbox">
+            <label for="rev5_withholding_checkbox">มีภาษีหัก ณ ที่จ่าย</label>
+          </div>
+          <div id="rev5_withholding_input_container" class="sub-section" style="display:none;">
+            <label>จำนวนภาษี (บาท)</label>
+            <input type="text" id="rev5_withholding_input" value="0" inputmode="decimal">
+          </div>
+        </div>
+
+        <!-- Type 6 -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="rev_type_6" name="rev_type" value="6">
+          <label for="rev_type_6">เงินได้ประเภทที่ 6 วิชาชีพอิสระ</label>
+        </div>
+        <div id="rev_type_6_input" style="display: none;">
+          <p>เลือกและกรอกจำนวนเงินสำหรับแต่ละประเภท (อัตราหักค่าใช้จ่าย)</p>
+
+          <div class="sub-section inline-checkbox">
+            <input type="checkbox" id="rev6_sub_1">
+            <label for="rev6_sub_1">ประกอบโรคศิลปะ</label>
+          </div>
+          <div id="rev6_sub_1_input" class="sub-section" style="display:none;">
+            <label>จำนวนเงิน (บาท)</label>
+            <input type="text" id="rev6_sub1_amount" value="0" inputmode="decimal">
+          </div>
+
+          <div class="sub-section inline-checkbox">
+            <input type="checkbox" id="rev6_sub_2">
+            <label for="rev6_sub_2">กฎหมาย, วิศวกรรม, สถาปัตยกรรม, บัญชี, ประณีตศิลปกรรม</label>
+          </div>
+          <div id="rev6_sub_2_input" class="sub-section" style="display:none;">
+            <label>จำนวนเงิน (บาท)</label>
+            <input type="text" id="rev6_sub2_amount" value="0" inputmode="decimal">
+          </div>
+
+          <div class="sub-section inline-checkbox" style="gap:8px;">
+            <input type="checkbox" id="rev6_withholding_checkbox">
+            <label for="rev6_withholding_checkbox">มีภาษีหัก ณ ที่จ่าย</label>
+          </div>
+          <div id="rev6_withholding_input_container" class="sub-section" style="display:none;">
+            <label>จำนวนภาษี (บาท)</label>
+            <input type="text" id="rev6_withholding_input" value="0" inputmode="decimal">
+          </div>
+        </div>
+
+        <!-- Type 7 -->
+        <div class="checkbox-group">
+          <input type="checkbox" id="rev_type_7" name="rev_type" value="7">
+          <label for="rev_type_7">เงินได้ประเภทที่ 7 รับเหมาก่อสร้าง</label>
+        </div>
+        <div id="rev_type_7_input" style="display: none;">
+          <label>จำนวนเงิน (บาท)</label>
+          <input type="text" id="rev7_amount" value="0" inputmode="decimal">
+          <div class="sub-section" style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="rev7_withholding_checkbox">
+            <label for="rev7_withholding_checkbox">มีภาษีหัก ณ ที่จ่าย</label>
+          </div>
+          <div id="rev7_withholding_input_container" class="sub-section" style="display:none;">
+            <label>จำนวนภาษี (บาท)</label>
+            <input type="text" id="rev7_withholding_input" value="0" inputmode="decimal">
+          </div>
+        </div>
+      </div>
+
+      <div class="checkbox-group">
+        <input type="checkbox" id="rev_type_8" name="rev_type" value="8">
+        <label for="rev_type_8">เงินได้ประเภทที่ 8 รายได้อื่น</label>
+      </div>
+      <div id="rev_type_8_input" style="display: none;">
+        <label>จำนวนเงิน (บาท)</label>
+        <input type="text" id="rev8_amount" value="0" inputmode="decimal">
+        <div class="sub-section" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="rev8_withholding_checkbox">
+          <label for="rev8_withholding_checkbox">มีภาษีหัก ณ ที่จ่าย</label>
+        </div>
+        <div id="rev8_withholding_input_container" class="sub-section" style="display:none;">
+          <label>จำนวนภาษี (บาท)</label>
+          <input type="text" id="rev8_withholding_input" value="0" inputmode="decimal">
+        </div>
+        <div class="info" style="margin-top:10px;">
+          <a href="https://rd.go.th/fileadmin/user_upload/kormor/newlaw/dc629.pdf" target="_blank">
+            ท่านสามารถตรวจสอบประเภทเงินได้พึงประเมินตามมาตรา 40(8) ได้ที่นี่
+          </a>
+        </div>
+      </div>
+
+      <div class="navigation-buttons">
+        <button type="button" onclick="prevStep(1)" disabled>ย้อนกลับ</button>
+        <button type="button" onclick="nextStep(1)">ถัดไป</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-content" id="step-2" style="display:none;">
+      <h2>ขั้นตอนที่ 2 ค่าใช้จ่าย</h2>
+      <p>ค่าใช้จ่ายหักได้ตามกฎเกณฑ์ของแต่ละประเภทของรายได้</p>
+      <p>ค่าใช้จ่ายที่หักได้ของคุณคือ
+        <span id="expense_display" class="expense-value">0</span> บาท
+      </p>
+      <div id="custom_expense_options"></div>
+      <div class="navigation-buttons">
+        <button type="button" onclick="prevStep(2)">ย้อนกลับ</button>
+        <button type="button" onclick="nextStep(2)">ถัดไป</button>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-content" id="step-3" style="display:none;">
+      <h2>ขั้นตอนที่ 3 ค่าลดหย่อน</h2>
+
+      <!-- Sticky segmented tabs -->
+      <div class="seg-tabs" role="tablist" id="deductTabs">
+        <button class="seg-tab active" data-target="#tab-personal" role="tab" aria-selected="true">ส่วนตัว</button>
+        <button class="seg-tab" data-target="#tab-insurance" role="tab" aria-selected="false">ประกัน/เงินออม/ลงทุน</button>
+        <button class="seg-tab" data-target="#tab-donation" role="tab" aria-selected="false">บริจาค</button>
+        <button class="seg-tab" data-target="#tab-stimulus" role="tab" aria-selected="false">กระตุ้นเศรษฐกิจ</button>
+      </div>
+
+      <!-- Panels -->
+      <div id="tab-personal" class="tab-panel active">
+        <div class="deduction-section section-personal">
+          <h3>1. ค่าลดหย่อนภาษีส่วนตัวและครอบครัว</h3>
+          <label>ค่าลดหย่อนส่วนตัว</label>
+          <p>60,000 บาท</p>
+
+          <label>คุณมีคู่สมรสที่ไม่มีรายได้หรือไม่?</label>
+          <select id="spouse">
+            <option value="no">ไม่มี</option>
+            <option value="yes">มี</option>
+          </select>
+          <div class="info">ลดหย่อนได้ 60,000 บาท ถ้าคู่สมรสไม่มีรายได้</div>
+
+          <label>จำนวนบุตรชอบด้วยกฎหมาย</label>
+          <select id="children_own"></select>
+          <div class="info">ลดหย่อนบุตรคนแรก 30,000 บาท คนที่ 2 ขึ้นไป 60,000 บาท</div>
+
+          <label>จำนวนบุตรบุญธรรม</label>
+          <select id="children_adopted"></select>
+          <div class="info">ลดหย่อนบุตรบุญธรรมคนละ 30,000 บาท (สูงสุด 3 คน)</div>
+
+          <label>บิดามารดาของคุณที่อายุมากกว่า 60 ปี และมีรายได้ไม่เกิน 30,000 บาทต่อปี</label>
+          <div class="checkbox-group">
+            <input type="checkbox" id="your_father"><label for="your_father">บิดาของคุณ</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="your_mother"><label for="your_mother">มารดาของคุณ</label>
+          </div>
+
+          <label>บิดามารดาของคู่สมรส (อายุ > 60 ปี)</label>
+          <div class="checkbox-group">
+            <input type="checkbox" id="spouse_father"><label for="spouse_father">บิดาของคู่สมรส</label>
+          </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="spouse_mother"><label for="spouse_mother">มารดาของคู่สมรส</label>
+          </div>
+
+          <label>จำนวนผู้พิการหรือทุพพลภาพที่คุณอุปการะ</label>
+          <select id="disabled_persons"></select>
+          <div class="info">ลดหย่อนได้คนละ 60,000 บาท</div>
+        </div>
+      </div>
+
+      <div id="tab-insurance" class="tab-panel">
+        <div class="deduction-section section-insurance" id="insurance_section">
+          <h3>2. ค่าลดหย่อนภาษีกลุ่มประกัน, เงินออม และการลงทุน</h3>
+
+          <div class="checkbox-group">
+            <input type="checkbox" id="has_social_security">
+            <label for="has_social_security">คุณส่งเงินสมทบประกันสังคมหรือไม่?</label>
+          </div>
+          <div id="social_security_section" style="display:none;">
+            <label>เงินสมทบประกันสังคม (บาท)
+              <span class="limit-label" id="social_security_limit_label"></span>
+            </label>
+            <input type="text" id="social_security" value="0" inputmode="decimal">
+            <div class="info">ระบบจะคำนวณให้โดยอัตโนมัติ (สูงสุด 9,000 บาทต่อปี)</div>
+          </div>
+
+          <label>เบี้ยประกันชีวิต (บาท)
+            <span class="limit-label" id="life_insurance_limit_label"></span>
+            <span class="error" id="life_insurance_error"></span>
+          </label>
+          <input type="text" id="life_insurance" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ตามที่จ่ายจริง ไม่เกิน 100,000 บาท</div>
+
+          <label>เบี้ยประกันสุขภาพ (บาท)
+            <span class="limit-label" id="health_insurance_limit_label"></span>
+            <span class="error" id="health_insurance_error"></span>
+          </label>
+          <input type="text" id="health_insurance" value="0" inputmode="decimal">
+          <div class="info">ไม่เกิน 25,000 บาท และเมื่อรวมกับเบี้ยประกันชีวิตต้องไม่เกิน 100,000 บาท</div>
+
+          <label>เบี้ยประกันสุขภาพบิดามารดา (บาท)
+            <span class="limit-label" id="parent_health_insurance_limit_label"></span>
+            <span class="error" id="parent_health_insurance_error"></span>
+          </label>
+          <input type="text" id="parent_health_insurance" value="0" inputmode="decimal">
+          <div class="info">ไม่เกิน 15,000 บาท</div>
+
+          <label>เบี้ยประกันชีวิตแบบบำนาญ (บาท)
+            <span class="limit-label" id="pension_insurance_limit_label"></span>
+            <span class="error" id="pension_insurance_error"></span>
+          </label>
+          <input type="text" id="pension_insurance" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ 15% ของรายได้ แต่ไม่เกิน 200,000 บาท</div>
+
+          <label>เงินสมทบกองทุนสำรองเลี้ยงชีพ (PVD) (บาท)
+            <span class="limit-label" id="pvd_limit_label"></span>
+            <span class="error" id="pvd_error"></span>
+          </label>
+          <input type="text" id="pvd" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ 15% ของรายได้ แต่ไม่เกิน 500,000 บาท</div>
+
+          <label>กองทุนบำเหน็จบำนาญราชการ (กบข.) (บาท)
+            <span class="limit-label" id="gpf_limit_label"></span>
+            <span class="error" id="gpf_error"></span>
+          </label>
+          <input type="text" id="gpf" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ 30% ของรายได้ แต่ไม่เกิน 500,000 บาท</div>
+
+          <label>กองทุนรวมเพื่อการเลี้ยงชีพ (RMF) (บาท)
+            <span class="limit-label" id="rmf_limit_label"></span>
+            <span class="error" id="rmf_error"></span>
+          </label>
+          <input type="text" id="rmf" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ 30% ของรายได้ แต่ไม่เกิน 500,000 บาท</div>
+
+          <label>กองทุนรวมไทยเพื่อความยั่งยืน (Thai ESG) (บาท)
+            <span class="limit-label" id="thaiesg_limit_label"></span>
+            <span class="error" id="thaiesg_error"></span>
+          </label>
+          <input type="text" id="thaiesg" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ 30% ของรายได้ แต่ไม่เกิน 300,000 บาท</div>
+
+          <div id="thaiesg_extra_container" style="display:none;">
+            <label class="tooltip-container tooltip-top">
+              <span class="info-icon" role="button" tabindex="0" aria-controls="tip_thaiesg_extra_transfer">i</span>
+              กองทุนรวมไทยเพื่อความยั่งยืนแบบพิเศษ (Thai ESG Extra) สำหรับรับโอนมาจากกองทุน LTF (บาท)
+              <span class="limit-label" id="thaiesg_extra_transfer_limit_label"></span>
+              <span class="error" id="thaiesg_extra_transfer_error"></span>
+              <span class="tooltip-bubble" id="tip_thaiesg_extra_transfer">
+                จำนวนที่นำมาคำนวณ จะต้องส่งสับเปลี่ยนระหว่างวันที่ 13 พ.ค. ถึง 31 มิ.ย. 2568 เท่านั้น
+              </span>
+            </label>
+            <input type="text" id="thaiesg_extra_transfer" value="0" inputmode="decimal">
+            <div class="info">
+              สำหรับรับโอนมาจากกองทุน LTF สูงสุด 500,000 บาท แบ่งเป็นใช้สิทธิในปี 2568 ลดหย่อนได้ 30% ของรายได้ แต่ไม่เกิน 300,000 บาท และทยอยลดหย่อนอีก 200,000 บาทที่เหลือในปีที่ 2-5 จำนวนปีละไม่เกิน 50,000 บาท
+            </div>
+
+            <label class="tooltip-container tooltip-top">
+              <span class="info-icon" role="button" tabindex="0" aria-controls="tip_thaiesg_extra_new">i</span>
+              กองทุนรวมไทยเพื่อความยั่งยืนแบบพิเศษ (Thai ESG Extra) สำหรับใช้สิทธิในปี 2568 (บาท)
+              <span class="limit-label" id="thaiesg_extra_new_limit_label"></span>
+              <span class="error" id="thaiesg_extra_new_error"></span>
+              <span class="tooltip-bubble" id="tip_thaiesg_extra_new">
+                จำนวนที่นำมาคำนวณ จะต้องส่งคำสั่งซื้อระหว่างวันที่ 1 พ.ค. ถึง 31 มิ.ย. 2568 เท่านั้น
+              </span>
+            </label>
+            <input type="text" id="thaiesg_extra_new" value="0" inputmode="decimal">
+            <div class="info">ลดหย่อนได้ 30% ของรายได้ แต่ไม่เกิน 300,000 บาท</div>
+          </div>
+
+          <label>เงินลงทุนธุรกิจ Social Enterprise (บาท)
+            <span class="limit-label" id="social_enterprise_limit_label"></span>
+            <span class="error" id="social_enterprise_error"></span>
+          </label>
+          <input type="text" id="social_enterprise" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ตามที่จ่ายจริง แต่ไม่เกิน 100,000 บาท</div>
+
+          <label>เงินสมทบกองทุนการออมแห่งชาติ (กอช.) (บาท)
+            <span class="limit-label" id="nsf_limit_label"></span>
+            <span class="error" id="nsf_error"></span>
+          </label>
+          <input type="text" id="nsf" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ตามที่จ่ายจริง แต่ไม่เกิน 30,000 บาท</div>
+        </div>
+      </div>
+
+      <div id="tab-donation" class="tab-panel">
+        <div class="deduction-section section-donation" id="donation_section">
+          <h3>3. ค่าลดหย่อนภาษีกลุ่มเงินบริจาค</h3>
+          <label>เงินบริจาคทั่วไป (บาท)</label>
+          <input type="text" id="donation" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ตามที่จ่ายจริง แต่ไม่เกิน 10% ของรายได้หลังหักค่าใช้จ่าย</div>
+          <label>เงินบริจาคเพื่อการศึกษา/กีฬา/พัฒนาชุมชน/สถานพยาบาล (บาท)</label>
+          <input type="text" id="donation_education" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อน 2 เท่าของเงินบริจาค</div>
+          <label>เงินบริจาคพรรคการเมือง (บาท)</label>
+          <input type="text" id="donation_political" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ตามที่จ่ายจริง ไม่เกิน 10,000 บาท</div>
+        </div>
+      </div>
+
+      <div id="tab-stimulus" class="tab-panel">
+        <div class="deduction-section section-stimulus" id="stimulus_section">
+          <h3>4. ค่าลดหย่อนกลุ่มกระตุ้นเศรษฐกิจของรัฐ</h3>
+
+          <label>Easy e-Receipt (บาท)
+            <span class="limit-label" id="easy_ereceipt_limit_label"></span>
+          </label>
+          <input type="text" id="easy_ereceipt" value="0" inputmode="decimal">
+          <div class="info">
+            ลดหย่อนได้ตามที่จ่ายจริง ไม่เกิน 50,000 บาท<br>
+            <a href="https://etax.rd.go.th/etax_staticpage/app/#/index/registered#top" target="_blank">
+              ตรวจสอบรายชื่อรายชื่อผู้ประกอบการได้ที่นี่
+            </a>
+          </div>
+
+          <label>ดอกเบี้ยเงินกู้เพื่อซื้อที่อยู่อาศัย (บาท)
+            <span class="limit-label" id="home_loan_interest_limit_label"></span>
+          </label>
+          <input type="text" id="home_loan_interest" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ตามที่จ่ายจริง ไม่เกิน 100,000 บาท</div>
+
+          <label>ซื้อบ้านใหม่ (บาท)
+            <span class="limit-label" id="new_home_limit_label"></span>
+          </label>
+          <input type="text" id="new_home" value="0" inputmode="decimal">
+          <div class="info">ลดหย่อนได้ 10,000 บาท ทุกๆ 1,000,000 บาท ของมูลค่าบ้านใหม่ สูงสุดไม่เกิน 100,000 บาท</div>
+
+          <div id="travel_main_secondary_container">
+            <label>
+              <span class="new-badge leading">ใหม่</span>
+              ค่าลดหย่อนสำหรับการเที่ยวเมืองหลัก-รอง 2568 (บาท)
+              <span class="limit-label" id="travel_main_secondary_limit_label"></span>
+            </label>
+            <input type="text" id="travel_main_secondary_2568" value="0" inputmode="decimal">
+            <div class="info">
+              ค่าที่พักและค่าอาหารที่จ่ายให้ผู้ประกอบการจด VAT ระหว่าง 29 ต.ค.–15 ธ.ค. 2568 หักลดหย่อนได้สูงสุด 20,000 บาท หากท่องเที่ยวในเมืองหลัก และหักได้ 1.5 เท่า (ไม่เกิน 30,000 บาท) หากเที่ยวเมืองรอง 55 จังหวัด หรือบางอำเภอใน 15 จังหวัด
+            </div>
+          </div>
+
+          <label>
+            <span class="new-badge leading">ใหม่</span>
+            ค่าลดหย่อนติดตั้งโซล่าร์เซลล์สำหรับที่อยู่อาศัย (Solar Rooftop) (บาท)
+            <span class="limit-label" id="solar_rooftop_limit_label"></span>
+          </label>
+          <input type="text" id="solar_rooftop" value="0" inputmode="decimal">
+          <div class="info">สามารถลดหย่อนได้ไม่เกิน 200,000 บาท ตามที่จ่ายจริง สำหรับค่าติดตั้งตั้งแต่วันที่ประกาศเป็นกฎหมาย ถึง 31 ธันวาคม 2570</div>
+        </div>
+      </div>
+
+      <div class="navigation-buttons">
+        <button type="button" onclick="prevStep(3)">ย้อนกลับ</button>
+        <button type="button" onclick="calculateTax()">คำนวณภาษี</button>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-content" id="step-4" style="display:none;">
+      <div class="receipt-container" id="printable-area">
+        <h2>สรุปผลการคำนวณ</h2>
+        <div class="receipt-row"><div class="receipt-label">รายได้ทั้งหมด</div><div class="receipt-value" id="result_total_income">0</div></div>
+        <div class="receipt-row"><div class="receipt-label">ค่าใช้จ่าย</div><div class="receipt-value" id="result_expense">0</div></div>
+        <div class="receipt-row">
+          <div class="receipt-label">
+            ค่าลดหย่อนทั้งหมด
+            <button type="button" id="toggle_deduction_breakdown" class="chevron" aria-expanded="false" aria-controls="deduction_breakdown" aria-label="แสดง/ซ่อนรายละเอียด">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="receipt-value" id="result_deductions">0</div>
+        </div>
+
+        <div id="deduction_breakdown" class="collapse" style="display:none;">
+          <div class="receipt-sublist">
+            <div class="receipt-subheading">รายละเอียดค่าลดหย่อน</div>
+            <div id="breakdown_deductions" class="mini-list"></div>
+          </div>
+        </div>
+
+        <hr>
+        <div class="receipt-row"><div class="receipt-label">รายได้สุทธิที่ต้องเสียภาษี</div><div class="receipt-value" id="result_net_income">0</div></div>
+        <hr>
+        <div class="receipt-row"><div class="receipt-label">ภาษีที่ต้องจ่าย</div><div class="receipt-value" id="result_tax_before_wh">0</div></div>
+        <div class="receipt-row"><div class="receipt-label">ภาษีเงินได้หัก ณ ที่จ่าย</div><div class="receipt-value" id="result_withholding_tax">0</div></div>
+        <hr>
+        <div class="receipt-row" style="margin-bottom:5px;"><div class="receipt-label" id="tax_due_real"></div><div class="receipt-value" id="tax_credit_refund"></div></div>
+        <div id="tax_summary" style="display:none;"></div>
+        <hr>
+        <div class="receipt-row"><div class="receipt-label">อัตราภาษีสูงสุดที่ต้องเสีย</div><div class="receipt-value" id="result_max_tax_rate">0%</div></div>
+        <div class="receipt-row"><div class="receipt-label">อัตราภาษีที่เสียจริง</div><div class="receipt-value" id="result_effective_tax_rate">0%</div></div>
+        <hr>
+
+        <div id="recommended-investments">
+          <h3>คำแนะนำการซื้อเพื่อสิทธิ์ลดหย่อนเพิ่มเติม</h3>
+          <p><strong>RMF ที่ซื้อได้สูงสุด</strong> <span id="max_rmf">ไม่สามารถซื้อเพิ่มได้</span></p>
+          <p><strong>Thai ESG ที่ซื้อได้สูงสุด</strong> <span id="max_thaiesg">ไม่สามารถซื้อเพิ่มได้</span></p>
+          <div id="max_thaiesg_extra_container" style="display:none;">
+            <p><strong>Thai ESG Extra ที่ซื้อได้สูงสุด</strong> <span id="max_thaiesg_extra_new">ไม่สามารถซื้อเพิ่มได้</span></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>ภาพรวมรายได้ตามขั้นภาษี</h3>
+        <canvas id="tax_waterfall"></canvas>
+      </div>
+
+      <button type="button" onclick="window.open('https://pocket.phillip.co.th/get-app', '_blank')" class="investment-button">ซื้อกองทุนเพื่อลดหย่อนภาษี</button>
+      <button type="button" onclick="window.open('https://forms.gle/CVxjn3UoD7t5Tpsq9', '_blank')" class="feedback-button">ให้คะแนนโปรแกรมนี้</button>
+      <div class="additional-buttons">
+        <button type="button" onclick="printResult()" class="print-button">พิมพ์ผลลัพธ์</button>
+        <button type="button" onclick="saveAsImage()" class="save-image-button">บันทึกเป็นรูปภาพ</button>
+      </div>
+      <div class="navigation-buttons">
+        <button type="button" onclick="editData()">แก้ไขข้อมูล</button>
+        <button type="button" onclick="resetData()">เริ่มใหม่</button>
+      </div>
+    </div>
+
+  <div id="resetButtonStep1" class="float-reset" style="display:none;" onclick="resetPage1()">&#x21bb;</div>
+  <div id="resetButtonStep3" class="float-reset" style="display:none;" onclick="resetPage3()">&#x21bb;</div>
+  <div id="scrollArrow" class="scroll-arrow" onclick="scrollPage()">&#x2193;</div>
+
+  <div id="errorModal" class="modal">
+    <div class="modal-content">
+      <h2>พบข้อผิดพลาด</h2>
+      <ul id="errorList"></ul>
+      <button type="button" onclick="closeErrorModal()">รับทราบ</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>window.Chart||document.write('<script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.min.js"><\/script>')</script>
+  <script src="utils.js"></script>
+  <script src="deductions.js"></script>
+  <script src="taxCalculation.js"></script>
+  <script src="investment.js"></script>
+  <script src="flow.js"></script>
+  <script src="main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
