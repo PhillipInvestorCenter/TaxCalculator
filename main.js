@@ -28,6 +28,69 @@ function canNavigateToStep(target){
   return target <= cap;
 }
 
+/* ---- Helpers (floating controls) ---- */
+function _currentStep(){
+  const stepper = document.getElementById('stepper');
+  return parseInt(stepper?.getAttribute('data-current-step') || '1', 10);
+}
+
+/* true viewport-fixed: keep nodes under <body> */
+function _ensureFloatingButtonsToBody(){
+  ['resetButtonStep1','resetButtonStep3','scrollArrow'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el && el.parentElement !== document.body){
+      document.body.appendChild(el);
+    }
+  });
+}
+
+/* arrow direction */
+function _updateScrollArrow(){
+  const el = document.getElementById('scrollArrow');
+  if (!el) return;
+  const y = window.scrollY || document.documentElement.scrollTop || 0;
+  el.innerHTML = (y <= 24) ? '&#x2193;' : '&#x2191;'; // down / up
+}
+
+/* unified visibility by context */
+function _applyFloatingVisibilityByStep(){
+  const arrow = document.getElementById('scrollArrow');
+  const r1 = document.getElementById('resetButtonStep1');
+  const r3 = document.getElementById('resetButtonStep3');
+  if (!arrow || !r1 || !r3) return;
+
+  const landing = document.getElementById('landing-page');
+  const main = document.getElementById('main-container');
+  const onLanding = landing && getComputedStyle(landing).display !== 'none'
+                 && main && getComputedStyle(main).display === 'none';
+
+  const step = _currentStep();
+
+  // Scroll button: hide on landing and on step 2
+  arrow.style.display = (onLanding || step === 2) ? 'none' : 'flex';
+
+  // Reset buttons by step
+  r1.style.display = (step === 1 && !onLanding) ? 'block' : 'none';
+  r3.style.display = (step === 3 && !onLanding) ? 'block' : 'none';
+}
+
+/* hide floats while editing inputs */
+function _hideFloatingDuringInput(){
+  const arrow = document.getElementById('scrollArrow');
+  const r1 = document.getElementById('resetButtonStep1');
+  const r3 = document.getElementById('resetButtonStep3');
+  if (arrow) arrow.style.display = 'none';
+  if (r1) r1.style.display = 'none';
+  if (r3) r3.style.display = 'none';
+}
+
+/* typing context detection */
+const _INPUT_SELECTOR = 'input, textarea, select, [contenteditable=""], [contenteditable="true"]';
+function _isTypingContext(){
+  const ae = document.activeElement;
+  return !!(ae && ae.matches && ae.matches(_INPUT_SELECTOR));
+}
+
 /* ---- Init ---- */
 window.onload = function () {
   const numberFields = [
@@ -52,8 +115,31 @@ window.onload = function () {
     el.addEventListener('blur', function(){
       if (this.value==='') this.value='0';
       if (typeof updateDeductionLimits==='function') updateDeductionLimits();
+      // restore floating controls after leaving input
+      _applyFloatingVisibilityByStep();
     });
   });
+
+  /* robust: hide floats when user is about to type / is typing */
+  document.addEventListener('pointerdown', (e)=>{
+    if (e.target && (e.target.matches?.(_INPUT_SELECTOR) || e.target.closest?.(_INPUT_SELECTOR))) {
+      _hideFloatingDuringInput();
+    }
+  }, true);
+  document.addEventListener('touchstart', (e)=>{
+    if (e.target && (e.target.matches?.(_INPUT_SELECTOR) || e.target.closest?.(_INPUT_SELECTOR))) {
+      _hideFloatingDuringInput();
+    }
+  }, { passive:true, capture:true });
+  document.addEventListener('focus', (e)=>{
+    if (e.target && e.target.matches?.(_INPUT_SELECTOR)) {
+      _hideFloatingDuringInput();
+    }
+  }, true);
+  document.addEventListener('blur', ()=>{
+    // let focus settle; if no input is focused, restore per step rules
+    setTimeout(()=>{ if (!_isTypingContext()) _applyFloatingVisibilityByStep(); }, 0);
+  }, true);
 
   const ss = document.getElementById('social_security');
   if (ss){
@@ -108,6 +194,7 @@ window.onload = function () {
     const obs = new MutationObserver(()=>{
       const n = parseInt(stepBar.getAttribute('data-current-step')||'1',10);
       if (!isTaxCalculated && n < 4){ maxVisitedStep = Math.max(maxVisitedStep||1, Math.min(3, n)); }
+      _applyFloatingVisibilityByStep();
     });
     obs.observe(stepBar, { attributes:true, attributeFilter:['data-current-step'] });
   }
@@ -156,6 +243,12 @@ window.onload = function () {
 
   populateChildrenOptions();
   if (typeof updateDeductionLimits==='function') updateDeductionLimits();
+
+  // floating controls boot
+  _ensureFloatingButtonsToBody();
+  _updateScrollArrow();
+  _applyFloatingVisibilityByStep();
+  window.addEventListener('scroll', _updateScrollArrow, { passive:true });
 };
 
 /* ---- Start + Reset ---- */
@@ -174,6 +267,10 @@ function startCalculator() {
   document.getElementById('main-container').style.display = 'block';
   setActiveStep(1);
   window.scrollTo({ top:0, behavior:'smooth' });
+
+  _ensureFloatingButtonsToBody();
+  _updateScrollArrow();
+  _applyFloatingVisibilityByStep();
 }
 
 function resetData() {
@@ -212,6 +309,8 @@ function resetData() {
 
   window.scrollTo({ top:0, behavior:'smooth' });
   if (typeof updateDeductionLimits==='function') updateDeductionLimits();
+
+  _applyFloatingVisibilityByStep();
 }
 
 function resetPage1() {
@@ -265,78 +364,12 @@ function scrollPage() {
   else window.scrollTo({ top: dh-h, behavior: 'smooth' });
 }
 
-/* --- keep floating controls attached to <body> so "position:fixed" is true viewport-fixed --- */
-function _ensureFloatingButtonsToBody(){
-  ['resetButtonStep1','resetButtonStep3','scrollArrow'].forEach(id=>{
-    const el = document.getElementById(id);
-    if (el && el.parentElement !== document.body){
-      document.body.appendChild(el);
-    }
-  });
-}
-
-/* optional: keep arrow pointing down at top, up after you scroll */
-function _updateScrollArrow(){
-  const el = document.getElementById('scrollArrow');
-  if (!el) return;
-  const y = window.scrollY || document.documentElement.scrollTop || 0;
-  el.innerHTML = (y <= 24) ? '&#x2193;' : '&#x2191;'; // down / up
-}
-
-/* define scrollPage if missing (keeps your existing onclick) */
-if (typeof window.scrollPage !== 'function'){
-  window.scrollPage = function(){
-    const y  = window.scrollY || document.documentElement.scrollTop || 0;
-    const dh = Math.max(
-      document.body.scrollHeight, document.documentElement.scrollHeight,
-      document.body.offsetHeight, document.documentElement.offsetHeight
-    );
-    const vh = window.innerHeight || document.documentElement.clientHeight;
-    const nearBottom = (y + vh) > (dh - 48);
-    window.scrollTo({ top: nearBottom ? 0 : (dh - vh), behavior: 'smooth' });
-  };
-}
-
-/* run at startup */
-document.addEventListener('DOMContentLoaded', ()=>{
-  _ensureFloatingButtonsToBody();
-  _updateScrollArrow();
-  window.addEventListener('scroll', _updateScrollArrow, { passive:true });
-});
-
-/* also run whenever you change pages/steps, so they never get stuck in a panel */
+/* keep floating controls attached to <body> and update on step changes */
 (function(orig){
   window.setActiveStep = function(n){
     if (orig) orig(n);
     _ensureFloatingButtonsToBody();
     _updateScrollArrow();
-  };
-})(window.setActiveStep);
-
-function _toggleScrollArrowForLanding(){
-  const arrow = document.getElementById('scrollArrow');
-  const landing = document.getElementById('landing-page');
-  const main = document.getElementById('main-container');
-  if (!arrow) return;
-  const onLanding = landing && getComputedStyle(landing).display !== 'none'
-                 && main && getComputedStyle(main).display === 'none';
-  arrow.style.display = onLanding ? 'none' : 'flex';
-}
-
-document.addEventListener('DOMContentLoaded', _toggleScrollArrowForLanding);
-
-// ensure it shows once app starts
-(function(orig){
-  window.startCalculator = function(y){
-    if (typeof orig === 'function') orig(y);
-    _toggleScrollArrowForLanding();
-  };
-})(window.startCalculator);
-
-// keep in sync when switching steps
-(function(orig){
-  window.setActiveStep = function(n){
-    if (typeof orig === 'function') orig(n);
-    _toggleScrollArrowForLanding();
+    _applyFloatingVisibilityByStep();
   };
 })(window.setActiveStep);
